@@ -1,0 +1,13 @@
+void setup() {
+    Serial.begin(9600);
+    //int i;
+    //for(i=0; i < 100; i++)
+    //    Serial.println(analogRead(3));
+
+    // http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1270982692
+    // port 14 → random, 0 → 1023, 14 → 1
+}
+
+void loop() {
+  Serial.println("Hi");
+}
