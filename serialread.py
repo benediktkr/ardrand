@@ -36,4 +36,5 @@ s = [(a, o[a]) for a in sorted(o.keys(), key=o.__getitem__, reverse=True)]
 
 print "Ran for:\t%f secs" % t
 print "Sample size:\t%d" % sum([a[1] for a in s])
+print "N.o. values:\t%d" % len(s)
 print s    
