@@ -16,11 +16,12 @@ o = {} # 'o' for occurances
 try:
     while True:
         val = int(ard.readline()[:-2])
-        print val
         if val in o:
             o[val] += 1
+            print "%d (%d)" % (val, o[val])
         else:
             o[val] = 1
+            print val, "(new)"
         
 
 except ValueError as v:
