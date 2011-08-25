@@ -24,7 +24,8 @@ def pull(stream, n):                    # Generator?
             break
         except Exception as E:
             print E
-            break
+            sleep(5)
+            continue
         
         l.append(int(val))
         print val
