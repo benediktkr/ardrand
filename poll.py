@@ -18,9 +18,9 @@ if __name__ == "__main__":
     port = "/dev/ttyUSB0"
     pin = 4
 
-    ard = Arduino("/dev/ttyUSB0", 9600)
+    ard = Arduino(sys.argv[1], 9600)
     # while True:
-    for i in xrange(0, int(sys.argv[1]))
+    for i in xrange(0, int(sys.argv[2])):
         print ard.poll()
         sleep(0.5)
 
