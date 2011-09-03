@@ -37,6 +37,7 @@ if __name__ == "__main__":
 
     prefix = "/home/benedikt/hr/loka"
 
+    # Store values in memory, we write to disk once. 
     l = []
     ard = Arduino(sys.argv[1], 9600)
     t = float(sys.argv[2])
