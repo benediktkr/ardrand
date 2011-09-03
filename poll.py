@@ -1,37 +1,59 @@
 #!/usr/bin/python
 #coding: utf8
 
-from serial import Serial
-from serial import SerialException
 from time import sleep
 from datetime import datetime, time, date
 import sys
+from arduino import Arduino
 
-class Arduino(Serial):
-    def poll(self, t, pin=3):
-        self.write("POLL " + str(pin))
-        try:
-            return t(self.readline()[:-2])
-        except:
-            return self.poll(self, t, pin)
+# Pull indefintely until KeyboardException
 
+def infrange(n=0, inf=False):
+    '''Generator to generate a sequence up to n or inf'''
+    if inf:
+        while True:
+            yield True
+    else:
+        i=0
+        while i < n:
+            yield i
+            i+=1
+        
 if __name__ == "__main__":
 
+    #Edit to both collect and poll
+
     if len(sys.argv) < 3:
-        print "usage: poll.py tty_port wait_time"
+        print "usage: poll.py tty_port wait_time [n]"
         sys.exit()
+
+    # Assume an infinite collector as default
+    n = 0
+    pollEndlessly = True
+    
+    if len(sys.argv) == 4:
+        n = int(sys.arv[3])
+        pollEndlessly = False
+
+    prefix = "/home/benedikt/hr/loka"
 
     l = []
     ard = Arduino(sys.argv[1], 9600)
-    try:
-        while True:
-            l.append(ard.poll(str))
-            sleep(float(sys.argv[2]))
+    t = float(sys.argv[2])
+    fname = "%s/data/%s_%s_%s.txt" % (prefix, date.today(), datetime.time(datetime.now()), sys.argv[2])
+    
+    for x in infrange(n, inf=pollEndlessly):
+        try:
+            l.append(ard.poll())
+            sleep(t)
+        except KeyboardInterrupt:
+            break
+        except Exception as E:
+            sys.stdout.write(str(E) + "\n")
 
-    except KeyboardInterrupt:
-        filename = "data/" + str(date.today()) + "_" + str(datetime.time(datetime.now())) + "_" + sys.argv[2] + ".txt"
-        print "Ok, writing to " + filename
-        f = open(filename, 'w')
-        f.write('\n'.join(l))
-        f.close()
-        print "wrote " + str(len(l)) + " lines"
+    # Write to timestamped file
+    print "Writing to file %s.." % fname
+    f = open(fname, 'w')
+    f.write('\n'.join(l))
+    f.close()
+    print "done. I wrote %d lines" % len(l)
