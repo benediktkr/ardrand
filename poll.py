@@ -32,7 +32,7 @@ if __name__ == "__main__":
     pollEndlessly = True
     
     if len(sys.argv) == 4:
-        n = int(sys.arv[3])
+        n = int(sys.argv[3])
         pollEndlessly = False
 
     prefix = "/home/benedikt/hr/loka"
