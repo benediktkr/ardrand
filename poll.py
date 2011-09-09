@@ -45,7 +45,17 @@ if __name__ == "__main__":
     
     for x in infrange(n, inf=pollEndlessly):
         try:
-            l.append(ard.poll())
+            # By first applying the int-function to the numbers we
+            # throw exceptions when the arduino sends a malformed
+            # string. This happens in about 0.2% of the time. I
+            # should perhaps look into this?
+            if "-v" in sys.argv:
+                r = int(ard.poll())
+                l.append(r)
+                print r
+            else:
+                l.append(int(ard.poll()))
+            
             sleep(t)
         except KeyboardInterrupt:
             break
@@ -53,8 +63,8 @@ if __name__ == "__main__":
             sys.stdout.write(str(E) + "\n")
 
     # Write to timestamped file
-    print "Writing to file %s.." % fname
+    print fname
     f = open(fname, 'w')
-    f.write('\n'.join(l))
+    f.write('\n'.join(map(str, l)) + '\n') # back to str
     f.close()
     print "done. I wrote %d lines" % len(l)

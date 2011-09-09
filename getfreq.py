@@ -1,5 +1,5 @@
 import sys
-from math import ceil, floor
+from math import ceil, floor, fabs
 from arduino import Data
 
 # MTS: classes
@@ -38,5 +38,5 @@ if __name__ == "__main__":
     print "Uniformity %f" % uniformity
     print "Sample size: %d" % d.count
 
-
+    print float(sum(map(fabs, d.correlation())))/d.count
 
