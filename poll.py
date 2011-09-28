@@ -31,8 +31,10 @@ if __name__ == "__main__":
     n = 0
     pollEndlessly = True
     
-    if len(sys.argv) == 4:
-        n = int(sys.argv[3])
+    args = [a for a in sys.argv if "-" not in a]
+
+    if len(args) == 4:
+        n = int(args[3])
         pollEndlessly = False
 
     prefix = "/home/benedikt/hr/loka"
@@ -41,23 +43,23 @@ if __name__ == "__main__":
     l = []
     ard = Arduino(sys.argv[1], 9600)
     t = float(sys.argv[2])
-    fname = "%s/data/%s_%s_%s.txt" % (prefix, date.today(), datetime.time(datetime.now()), sys.argv[2])
+
+    #fname = "%s/data/%s_%s_%s.txt" % (prefix, date.today(), datetime.time(datetime.now()), sys.argv[2])
+    fname = "%s/5sek_2h_herbergi.txt" % prefix
     
     for x in infrange(n, inf=pollEndlessly):
+        r = ard.poll()
         try:
             # By first applying the int-function to the numbers we
             # throw exceptions when the arduino sends a malformed
             # string. This happens in about 0.2% of the time. I
             # should perhaps look into this?
+            l.append(int(r))
             if "-v" in sys.argv:
-                r = int(ard.poll())
-                l.append(r)
                 print r
-            else:
-                l.append(int(ard.poll()))
-            
             sleep(t)
         except KeyboardInterrupt:
+            print
             break
         except Exception as E:
             sys.stdout.write(str(E) + "\n")
