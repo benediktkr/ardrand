@@ -27,11 +27,15 @@ if __name__ == "__main__":
         print "usage: poll.py tty_port wait_time [n]"
         sys.exit()
 
+    print "Input filename (empty string for no save): "
+    fname = raw_input()
+
     # Assume an infinite collector as default
     n = 0
     pollEndlessly = True
     
     args = [a for a in sys.argv if "-" not in a]
+    printErrors = "-e" in sys.argv
 
     if len(args) == 4:
         n = int(args[3])
@@ -45,7 +49,7 @@ if __name__ == "__main__":
     t = float(sys.argv[2])
 
     #fname = "%s/data/%s_%s_%s.txt" % (prefix, date.today(), datetime.time(datetime.now()), sys.argv[2])
-    fname = "%s/5sek_2h_herbergi.txt" % prefix
+    #fname = "%s/5sek_2h_herbergi.txt" % prefix
     
     for x in infrange(n, inf=pollEndlessly):
         r = ard.poll()
@@ -61,12 +65,15 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print
             break
+        except OSError:
+            sleep(1)
         except Exception as E:
-            sys.stdout.write(str(E) + "\n")
+            if printErrors:
+                sys.stdout.write(str(E) + "\n")
 
-    # Write to timestamped file
-    print fname
-    f = open(fname, 'w')
-    f.write('\n'.join(map(str, l)) + '\n') # back to str
-    f.close()
-    print "done. I wrote %d lines" % len(l)
+
+    if fname:
+        f = open(fname, 'w')
+        f.write('\n'.join(map(str, l)) + '\n') # back to str
+        f.close()
+        print "done. I wrote %d lines" % len(l)
