@@ -4,6 +4,7 @@ from serial import Serial
 from serial import SerialException
 from collections import defaultdict
 from math import floor, ceil
+from time import sleep 
 
 class Arduino(Serial):
     """The Arduino class communicates with the arduino board and
@@ -15,12 +16,18 @@ class Arduino(Serial):
         self.pin = p
 
     def readint(self):
+        """Catch OSError because the Arudino tends to be become 'unavailible' and
+        check if we read a digit because we sometimes get malformed strings.
+        TODO: fix this"""
         self.write("POLL " + str(self.pin))
         while True:
-            i = self.readline()[:-2]
-            if i.isdigit():
-                return int(i)
-
+            try:
+                i = self.readline()[:-2]
+                if i.isdigit():
+                    return int(i)
+            except OSError as e:
+                print "OSError sleeping for 10 secs \n", e
+                sleep(10)
     def poll(self):
         self.write("POLL " + str(self.pin))
         return self.readline()[:-2]
@@ -37,6 +44,8 @@ class Arduino(Serial):
 
         meanval = float(sum(buf))/bufsize
         for i in xrange(n):
+            if i%50==0:
+                print i
             # Remove the old value, adjust mean, read new val, adjust again
             meanval -= buf[i%bufsize]/bufsize
             buf[i%bufsize] = self.readint()
@@ -57,16 +66,15 @@ class Arduino(Serial):
             else:
                 yield '0'
 
-
-if __name__ == "__main__":
-    ard = Arduino()
-    print ''.join([a for a in ard.meanrand(2)])
-
 class StatTests:
-    def __init__(self, n):
-        pass
+    def __init__(self, bitstring):
+        self.s = bitstring
     def monobit(self):
-        pass
+        n = len(self.s)
+        n0 = len([a for a in self.s if a == '0'])
+        n1 = n-n0
+        print n, n0, n1
+        return float((n0-n1)**2)/n
     def twobit(self):
         pass
     def poker(self):
