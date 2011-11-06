@@ -14,6 +14,8 @@ if algorithm == 'meanrand':
     s = ''.join(ard.meanrand(20000))
 elif algorithm == 'updownrand':
     s = ''.join(ard.updownrand(20000))
+elif algorithm == 'mix':
+    s = ''.join(ard.mixmeanupdown(20000))
 f.write(s)
 
 st = StatTests(s)
