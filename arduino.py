@@ -101,7 +101,13 @@ class Arduino(Serial):
             v0 = b0
             yield str(v0)
                     
-            
+    def mixmeanupdow(self, n):
+        """Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
+        m = self.meanrand(n)
+        u = self.updownrand(n)
+        
+        for i in xrange(n):
+            yield m.next()^u.next()
             
 class StatTests:
     def __init__(self, bitstring):
