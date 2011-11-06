@@ -101,7 +101,7 @@ class Arduino(Serial):
             v0 = b0
             yield str(v0)
                     
-    def mixmeanupdow(self, n):
+    def mixmeanupdown(self, n):
         """Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
         m = self.meanrand(n)
         u = self.updownrand(n)
