@@ -54,6 +54,14 @@ class Arduino(Serial):
             """Generate two bits and run them through a von Neumann box.
             00/11 → discard, 10 → 1, 01 → 0"""
             while True:
+
+                # A little tweak to test: later
+                # Read integers ar0 and ar1 and store in variables
+                # deque and decrease two values from meanval
+                # append ar0 and ar1 to buf in increase meanval
+                # b0 = 1 if ar0 > meanval else 0
+                # b1 = 1 if ar1 > meanval else 1
+                # epply neamann box on b0 and b1
                 meanval -= float(buf.popleft())/bufsize
                 buf.append(self.readint())
                 meanval += float(buf[-1])/bufsize
@@ -112,13 +120,13 @@ class Arduino(Serial):
 class StatTests:
     def __init__(self, bitstring):
         self.s = bitstring
-        self.fips = len(bitstring) == 20000
+        self.fips = (len(bitstring) == 20000)
     def monobit(self):
         n = len(self.s)
         n0 = len([a for a in self.s if a == '0'])
         n1 = n-n0
         print n1
-        if (9654 < n) and (n < 10346):
+        if (9654 < n1) and (n1 < 10346) and self.fips:
             print "Monobit: within the FIPS 140-1 bounds!"
         return float((n0-n1)**2)/n
     def twobit(self):
