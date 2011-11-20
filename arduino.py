@@ -75,39 +75,58 @@ class Arduino(Serial):
                 else:
                     #print "accepted", b0
                     break
+            # TODO: alter to what lestsig-RAND does ASAP. Code beauty.
             if b0 == 1:
                 yield '1'
             else:
                 yield '0'
 
     def updownrand(self, n):
-        """First read a value v_0. Then use it to determine if next bit v_1 is 1 or 0. If we have v_1 > v_0
-        for the new value v_1 then we generate a 1, otherwise a 0. In order to determine v_1 we read two
-        values and apply the vN box
+        """First read a value v_0. Then use it to determine if the bit b is 1 or 0. If we have v_1 > v_0
+        for the new value v_1 then we have b=1, otherwise b=0. In order to determine b we read two
+        values (or more) and apply the vN box.
 
-        Thoughts:
-        v_1 == v_0 → discard?
+        I can think of several variations of this algorithm. Now, we first determine v_0 and then take
+        two or more readings with the vN-box. We could read v_0 on the fly and not fix it, so the vN-box
+        reads four values in each run and not two:
+           vNbox (idea):
+              b0 = 1 if readint() < readint() else 0
+           vNbox (now):
+              b0 = 1 if readint() < v_0 else 0
 
         20k 108m58.164s"""
 
-        v0 = self.readint()
         for i in xrange(n):
             if i%50 == 0:
                 print i
 
-            # vN box. TODO: vN box function
-            while True:
-                #print v0, self.readint()
-                b0 = 1 if self.readint() > v0 else 0
-                b1 = 1 if self.readint() > v0 else 0
-                v0 = self.readint()
-                if b0 == b1:
-                    continue
-                else:
-                    break
-
-            v0 = b0
-            yield str(v0)
+            v0 = self.readint()
+            
+            b =  self.vnbox(lambda: 1 if self.readint() > v0 else 0)
+            # while True:
+            #     b0 = 1 if self.readint() > v0 else 0
+            #     b1 = 1 if self.readint() > v0 else 0
+            
+            #     if b0 == b1:
+            #         continue
+            #     else:
+            #         break
+            # yield str(b0)
+            yield b
+            ##  vN box. TODO: vN box function
+            ##  Seems like this was wrong. v0 was assigned the last bitvalue, not analogRead value
+            # while True:
+            #     #print v0, self.readint()
+            #     b0 = 1 if self.readint() > v0 else 0
+            #     b1 = 1 if self.readint() > v0 else 0
+            #     v0 = self.readint()
+            #     if b0 == b1:
+            #         continue
+            #     else:
+            #         break
+            #
+            #v0 = b0
+            #yield str(v0)
                     
     def mixmeanupdown(self, n):
         """Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
@@ -116,6 +135,25 @@ class Arduino(Serial):
         
         for i in xrange(n):
             yield m.next()^u.next()
+
+    def leastsigrand(self, n):
+        """For every analogRead(), use the least significant bit, and vN-box
+        Ask ymir what site he was talking about"""
+        for i in xrange(n):
+            if i%50 == 0:
+                print i                 # Sigh..
+            yield self.vnbox(lambda: self.readint()&1)
+
+    def vnbox(self, phi):
+        while True:
+            b0 = phi()   # Can i do this in one line?
+            b1 = phi()
+
+            if b0 == b1:
+                continue
+            else:
+                return str(b0)
+
             
 class StatTests:
     def __init__(self, bitstring):
@@ -125,7 +163,7 @@ class StatTests:
         n = len(self.s)
         n0 = len([a for a in self.s if a == '0'])
         n1 = n-n0
-        print n1
+        print "n1: ", n1
         if (9654 < n1) and (n1 < 10346) and self.fips:
             print "Monobit: within the FIPS 140-1 bounds!"
         return float((n0-n1)**2)/n

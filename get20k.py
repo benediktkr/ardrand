@@ -7,21 +7,28 @@ if len(sys.argv) == 1:
     sys.exit()
     
 algorithm = sys.argv[1]
+k = int(sys.argv[2])
 ard = Arduino()
-f = open('/home/benedikt/hr/loka/statusreport/' + algorithm + '20k.txt', 'w')
 
+
+# ...
 if algorithm == 'meanrand':
-    s = ''.join(ard.meanrand(20000))
+    s = ''.join(ard.meanrand(k))
 elif algorithm == 'updownrand':
-    s = ''.join(ard.updownrand(20000))
+    s = ''.join(ard.updownrand(k))
 elif algorithm == 'mix':
-    s = ''.join(ard.mixmeanupdown(20000))
-f.write(s)
+    s = ''.join(ard.mixmeanupdown(k))
+elif algorithm == 'leastsig':
+    s = ''.join(ard.leastsigrand(k))
+
 
 st = StatTests(s)
-print s.monobit()
-
-f.close()
-
-
+print st.monobit()
+save = (sys.argv[3] if len(sys.argv) >= 4 else "") or raw_input("Save to: ")
+if "-p" in sys.argv:
+    print s
+elif save:
+    f = open(save, 'w')
+    f.write(s)
+    f.close()
 
