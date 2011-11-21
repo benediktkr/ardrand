@@ -101,32 +101,8 @@ class Arduino(Serial):
                 print i
 
             v0 = self.readint()
-            
             b =  self.vnbox(lambda: 1 if self.readint() > v0 else 0)
-            # while True:
-            #     b0 = 1 if self.readint() > v0 else 0
-            #     b1 = 1 if self.readint() > v0 else 0
-            
-            #     if b0 == b1:
-            #         continue
-            #     else:
-            #         break
-            # yield str(b0)
             yield b
-            ##  vN box. TODO: vN box function
-            ##  Seems like this was wrong. v0 was assigned the last bitvalue, not analogRead value
-            # while True:
-            #     #print v0, self.readint()
-            #     b0 = 1 if self.readint() > v0 else 0
-            #     b1 = 1 if self.readint() > v0 else 0
-            #     v0 = self.readint()
-            #     if b0 == b1:
-            #         continue
-            #     else:
-            #         break
-            #
-            #v0 = b0
-            #yield str(v0)
                     
     def mixmeanupdown(self, n):
         """Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
@@ -158,23 +134,76 @@ class Arduino(Serial):
 class StatTests:
     def __init__(self, bitstring):
         self.s = bitstring
-        self.fips = (len(bitstring) == 20000)
+        self.n = len(self.s)
+        self.fips = (self.n == 20000)
+
+    def __len__(self):
+        return len(self.s)
+
     def monobit(self):
-        n = len(self.s)
+        '''Returns 2-tuple (X1, n1)'''
         n0 = len([a for a in self.s if a == '0'])
         n1 = n-n0
-        print "n1: ", n1
-        if (9654 < n1) and (n1 < 10346) and self.fips:
-            print "Monobit: within the FIPS 140-1 bounds!"
-        return float((n0-n1)**2)/n
+        X1 = (float((n0-n1)**2)/n, n1)
+
+        return X1
+
     def twobit(self):
         pass
-    def poker(self):
-        pass
+
+    def poker(self, m=4):
+        '''Divide the sequence s into k non-overlapping parts, each of length m
+        Let N[i] count the number of occurances of the ith type of sequnce
+        There are 2^m possible strings so we have that 0 < i <= 2^m'''
+        k = int(floor(self.n/m))
+
+        if not k >= 5*2**m:
+            print "Lower your m! (Or write this code)"
+            return False
+
+        S = [self.s[a:a+m] for a in range(0, self.n, m)][:k]
+        N = [0]*2**m
+
+        # *twich*
+        for i in S:
+            N[int(i, 2)] += 1
+        
+        X3 = float(2**m)/k * sum(map(lambda x: x**2, N)) - k
+            
+        return X3
+    
     def runs(self):
-        pass
+            # e_i are the number of caps of length i
+            # Let k be the largest i for which we have e_i >= 5
+            #              length of the largest that with 5 or more occurances.
+            n = len(s)
+            B = [0]*n
+            G = B[:]
+            for i in range(1, n):
+                # Find sequnces of length i
+                B[i] = [s[a:a+i] for a in range(n-i) if sum(s[a:a+i]) == i]
+                
+                G[i] = [s[a:a+i] for a in range(n-i) if sum(s[a:a+i]) == 0]
+                
+                #P[i] = [f(x) for a in range(n-i) if sum(s[a:a+1]) == i else if ...]
+
+
     def autocorrelation(self):
         pass
+
+class FipsTest():
+    def __init__(self, bistring):
+        if not len(bitstring) == 20000:
+            return False
+        self.s = bitstring
+        self.st = StatTests(self.s)
+
+    def monobit():
+        n1 = self.st.monobit()[1]
+        if (9654 < n1) and (n1 < 10346) and self.fips:
+            return True
+        return False
+        
 
 class RawData:
     def __init__(self, l):
@@ -199,3 +228,4 @@ class RawData:
             corr.append(self.data[i] - self.data[i-1]) 
         return corr
  
+
