@@ -48,8 +48,8 @@ class Arduino(Serial):
         print "...done"
         
         for i in xrange(n):
-            if i%50==0:
-                print i
+            #if i%50==0:
+            #    print i
 
             """Generate two bits and run them through a von Neumann box.
             00/11 → discard, 10 → 1, 01 → 0"""
@@ -97,8 +97,8 @@ class Arduino(Serial):
         20k 108m58.164s"""
 
         for i in xrange(n):
-            if i%50 == 0:
-                print i
+            #if i%50 == 0:
+            #    print i
 
             v0 = self.readint()
             b =  self.vnbox(lambda: 1 if self.readint() > v0 else 0)
@@ -116,9 +116,15 @@ class Arduino(Serial):
         """For every analogRead(), use the least significant bit, and vN-box
         Ask ymir what site he was talking about"""
         for i in xrange(n):
-            if i%50 == 0:
-                print i                 # Sigh..
+            #if i%50 == 0:
+            #    print i                 # Sigh..
             yield self.vnbox(lambda: self.readint()&1)
+
+    def twoleastsignrand(self, n):
+        """For every two analogRead(), look at the XOR of the two
+        least significant bits (of the latest two readings)"""
+        for i in xrange(n):
+            yield self.vnbox(lambda: self.readint()&1^self.readint()&2>>1)
 
     def vnbox(self, phi):
         while True:
@@ -143,8 +149,8 @@ class StatTests:
     def monobit(self):
         '''Returns 2-tuple (X1, n1)'''
         n0 = len([a for a in self.s if a == '0'])
-        n1 = n-n0
-        X1 = (float((n0-n1)**2)/n, n1)
+        n1 = self.n-n0
+        X1 = (float((n0-n1)**2)/self.n, n1)
 
         return X1
 
@@ -172,38 +178,54 @@ class StatTests:
             
         return X3
     
-    def runs(self):
-            # e_i are the number of caps of length i
-            # Let k be the largest i for which we have e_i >= 5
-            #              length of the largest that with 5 or more occurances.
-            n = len(s)
-            B = [0]*n
-            G = B[:]
-            for i in range(1, n):
-                # Find sequnces of length i
-                B[i] = [s[a:a+i] for a in range(n-i) if sum(s[a:a+i]) == i]
-                
-                G[i] = [s[a:a+i] for a in range(n-i) if sum(s[a:a+i]) == 0]
-                
-                #P[i] = [f(x) for a in range(n-i) if sum(s[a:a+1]) == i else if ...]
+    def runs(self, k=0):
+        # e_i are the number of caps of length i
+        # Let k be the largest i for which we have e_i >= 5
+        #  >>> e = lambda i: float(20000-i+3)/2**(i+2); e(9)
+        #  9.7626953125      (approx 10)
+        k = 10 if k == 0 else k
+        B = [0]*(k+1)
+        G = B[:]
+        print k
+        
+        c = lambda b, i: len([self.s[a:a+i+2] for a in range(self.n-i-2) if self.s[a:a+i+2] == '0' + b*i +'0'])
+        for i in range(1, k+1):
+            print i
+            # Find sequnces of length i
+            #B[i] = c('1', i)
+            #G[i] = c('0', i)
+            #B[i] = self.s.count('1'*i)
+            #G[i] = self.s.count('0'*i)
+            B[i] = c('1', i) + (i if self.s[0:i+1] == ('1'*i + '0') else 0) + (i if self.s[self.n-i-1:] == ('0' + '1'*i) else 0)
+            #if self.s[0:i+1] == ('1'*i + '0'):
+            #    B[i] += i
+            #if self.s[self.n-i-1:] == ('0' + '1'*i):
+            #    B[i] += i
+            #print "B[i]"
 
-
+        return B, G
+                
     def autocorrelation(self):
         pass
 
-class FipsTest():
-    def __init__(self, bistring):
+class FipsTests():
+    def __init__(self, bitstring):
         if not len(bitstring) == 20000:
-            return False
+            raise Exception
         self.s = bitstring
         self.st = StatTests(self.s)
 
-    def monobit():
+    def monobit(self):
         n1 = self.st.monobit()[1]
-        if (9654 < n1) and (n1 < 10346) and self.fips:
-            return True
-        return False
-        
+        if (9654 < n1) and (n1 < 10346):
+            return (True, n1)
+        return (False, n1)
+
+    def poker(self):
+        X3 = self.st.poker(4)
+        if (X3 > 1.03) and (X3 < 57.4):
+            return (True, X3)
+        return (False, X3)
 
 class RawData:
     def __init__(self, l):
