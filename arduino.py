@@ -1,11 +1,11 @@
 #coding: utf-8
 
-from serial import Serial
-from serial import SerialException
+from serial import Serial, SerialException
 from collections import defaultdict, deque 
 from math import floor, ceil
 from time import sleep
 from sys import stdout
+from itertools import groupby
 
 class Arduino(Serial):
     """The Arduino class communicates with the arduino board and
@@ -70,10 +70,8 @@ class Arduino(Serial):
                 b0 = 1 if self.readint() > m else 0
                 b1 = 1 if self.readint() > m else 0
                 if b0 == b1:
-                    #print b0, "discarded over", m, " or ", meanval, " fresh reading: ", self.readint()
                     continue
                 else:
-                    #print "accepted", b0
                     break
             # TODO: alter to what lestsig-RAND does ASAP. Code beauty.
             if b0 == 1:
@@ -82,13 +80,16 @@ class Arduino(Serial):
                 yield '0'
 
     def updownrand(self, n):
-        """First read a value v_0. Then use it to determine if the bit b is 1 or 0. If we have v_1 > v_0
-        for the new value v_1 then we have b=1, otherwise b=0. In order to determine b we read two
-        values (or more) and apply the vN box.
+        """First read a value v_0. Then use it to determine if the bit
+        b is 1 or 0. If we have v_1 > v_0 for the new value v_1 then
+        we have b=1, otherwise b=0. In order to determine b we read
+        two values (or more) and apply the vN box.
 
-        I can think of several variations of this algorithm. Now, we first determine v_0 and then take
-        two or more readings with the vN-box. We could read v_0 on the fly and not fix it, so the vN-box
-        reads four values in each run and not two:
+        I can think of several variations of this algorithm. Now, we
+        first determine v_0 and then take two or more readings with
+        the vN-box. We could read v_0 on the fly and not fix it, so
+        the vN-box reads four values in each run and not two:
+        
            vNbox (idea):
               b0 = 1 if readint() < readint() else 0
            vNbox (now):
@@ -113,8 +114,8 @@ class Arduino(Serial):
             yield m.next()^u.next()
 
     def leastsigrand(self, n):
-        """For every analogRead(), use the least significant bit, and vN-box
-        Ask ymir what site he was talking about"""
+        """For every analogRead(), use the least significant bit, and
+        vN-box Ask ymir what site he was talking about"""
         for i in xrange(n):
             #if i%50 == 0:
             #    print i                 # Sigh..
@@ -136,7 +137,6 @@ class Arduino(Serial):
             else:
                 return str(b0)
 
-            
 class StatTests:
     def __init__(self, bitstring):
         self.s = bitstring
@@ -179,41 +179,54 @@ class StatTests:
         return X3
     
     def runs(self, k=0):
-        # e_i are the number of caps of length i
-        # Let k be the largest i for which we have e_i >= 5
-        #  >>> e = lambda i: float(20000-i+3)/2**(i+2); e(9)
-        #  9.7626953125      (approx 10)
+        ''' e_i is the number of caps of length i
+            Let k be the largest i for which we have e_i >= 5
+              [Methinks it should be calculated on the fly or something]
+         
+           For n=20000, we have 
+              >>> e = lambda i, n: float(n-i+3)/2**(i+2); e(9, 20000)
+               9.7626953125      (approx 10)
+
+           Returns a 3-tuple of
+              - statistic X4 which follows X^2 with df=2k-2
+              - number of gaps
+              - number of blocks'''
+        
         k = 10 if k == 0 else k
         B = [0]*(k+1)
         G = B[:]
-        print k
-        
-        c = lambda b, i: len([self.s[a:a+i+2] for a in range(self.n-i-2) if self.s[a:a+i+2] == '0' + b*i +'0'])
-        for i in range(1, k+1):
-            print i
-            # Find sequnces of length i
-            #B[i] = c('1', i)
-            #G[i] = c('0', i)
-            #B[i] = self.s.count('1'*i)
-            #G[i] = self.s.count('0'*i)
-            B[i] = c('1', i) + (i if self.s[0:i+1] == ('1'*i + '0') else 0) + (i if self.s[self.n-i-1:] == ('0' + '1'*i) else 0)
-            #if self.s[0:i+1] == ('1'*i + '0'):
-            #    B[i] += i
-            #if self.s[self.n-i-1:] == ('0' + '1'*i):
-            #    B[i] += i
-            #print "B[i]"
 
-        return B, G
+        #for i in range(1, k+1):
+
+        # Maður lifandi, þetta er sniðugt!
+        for groupname, group in groupby(self.s):
+            i = len(''.join(group))
+            if i > k:
+                # NOTE: Not sure if the FIPS specifications expect this behaviour. 
+                continue
+            elif groupname == '1':
+                B[i] += 1
+            else:
+                G[i] += 1
+
+        e = lambda i: float(self.n-i+3)/2**(i+2) # Returns a float
+        E = [e(i) for i in range(1, k)]
+
+        X4 = sum([((B[i] - e(i))**2 + (G[i] - e(i))**2)/e(i) for i in range(1, k+1)])
+        
+        return (X4, G, B)
                 
     def autocorrelation(self):
         pass
 
 class FipsTests():
     def __init__(self, bitstring):
-        if not len(bitstring) == 20000:
+        self.n = len(bistring)
+        if not n == 20000:
             raise Exception
         self.s = bitstring
-        self.st = StatTests(self.s)
+        # HACK: Create instance of class so we can use same names. 
+        self.st = StatTests(self.s)     
 
     def monobit(self):
         n1 = self.st.monobit()[1]
@@ -227,6 +240,37 @@ class FipsTests():
             return (True, X3)
         return (False, X3)
 
+    def runs(self):
+        '''See table on p. 183 in Menezes. There are limits for all 1<=i<=6.
+        For the purposes of this test, longer runs than 6 are considered to have
+        a length of 6.
+
+        NOTE: StatTests.runs() only counts runs of length up to k. Easily changed
+              by commenting the line out'''
+        X4, G, B = self.st.runs(10)
+        B[6] = sum(B[7:])
+        G[6] = sum(G[7:])
+
+        limits = [ [],
+                   [2267, 2733],
+                   [1079, 1421],
+                   [502, 748],
+                   [223, 402],
+                   [90, 223],
+                   [90, 223]
+            ]
+
+        #compare = lambda i: (G[i] < limits[i][0], G[
+
+        for i in range(1, 7):
+            # Gaps and blocks separately so we can tell the diff
+            if (G[i] < limits[i][0]) or (G[i] > limits[i][1]):
+                return (False, i, "gap")
+            if (B[i] < limits[i][0]) or (B[i] > limits[i][1]):
+                return (False, i, "block")
+            
+        return (True)
+        
 class RawData:
     def __init__(self, l):
         self.data = l
