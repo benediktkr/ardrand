@@ -136,7 +136,22 @@ class Arduino(Serial):
                 continue
             else:
                 return str(b0)
+            
+    def vanilla(self, n):
+        '''Reeads from analogRead() a total of n bits (reads 10-bit integer at a time)
+        Yields 10 bits at a time instead of 1 like the others'''
 
+        for i in xrange(n/10):
+            b = bin(self.readint())[2:]
+            m = 10 - len(b)
+            if m > 0:
+                b = '0'*m + b
+            yield b
+
+        bitsLeft = 10 - (n/10)*10
+        b = bin(self.readint())[2:]
+        yield b[:bitsLeft]
+        
 class StatTests:
     def __init__(self, bitstring):
         self.s = bitstring
@@ -150,9 +165,9 @@ class StatTests:
         '''Returns 2-tuple (X1, n1)'''
         n0 = len([a for a in self.s if a == '0'])
         n1 = self.n-n0
-        X1 = (float((n0-n1)**2)/self.n, n1)
+        X1 = float((n0-n1)**2)/self.n
 
-        return X1
+        return (X1, n1)
 
     def twobit(self):
         pass
@@ -229,10 +244,10 @@ class FipsTests():
         self.st = StatTests(self.s)     
 
     def monobit(self):
-        n1 = self.st.monobit()[1]
+        X1, n1 = self.st.monobit()
         if (9654 < n1) and (n1 < 10346):
             return (True, n1)
-        return (False, n1)
+        return (False, X1, n1)
 
     def poker(self):
         X3 = self.st.poker(4)
@@ -266,11 +281,11 @@ class FipsTests():
         for i in range(1, 7):
             # Gaps and blocks separately so we can tell the diff
             if (G[i] < limits[i][0]) or (G[i] > limits[i][1]):
-                return (False, i, "gap")
+                return (False, i, X4, "gap")
             if (B[i] < limits[i][0]) or (B[i] > limits[i][1]):
-                return (False, i, "block")
+                return (False, i, X4, "block")
             
-        return (True)
+        return (True, X4)
         
 class RawData:
     def __init__(self, l):
