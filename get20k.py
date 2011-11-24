@@ -31,9 +31,11 @@ if "-p" in sys.argv:
 st = StatTests(s)
 print st.monobit()
 print st.poker()
+print st.runs()
 fips = FipsTests(s)
 print fips.monobit()
 print fips.poker()
+print fips.runs()
 save = (sys.argv[3] if len(sys.argv) >= 4 else "") or raw_input("Save to: ")
 if save:
     f = open(save, 'w')
