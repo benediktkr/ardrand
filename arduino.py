@@ -222,7 +222,7 @@ class StatTests:
 class FipsTests():
     def __init__(self, bitstring):
         self.n = len(bitstring)
-        if not n == 20000:
+        if not self.n == 20000:
             raise Exception
         self.s = bitstring
         # HACK: Create instance of class so we can use same names. 
