@@ -221,7 +221,7 @@ class StatTests:
 
 class FipsTests():
     def __init__(self, bitstring):
-        self.n = len(bistring)
+        self.n = len(bitstring)
         if not n == 20000:
             raise Exception
         self.s = bitstring
@@ -260,7 +260,8 @@ class FipsTests():
                    [90, 223]
             ]
 
-        #compare = lambda i: (G[i] < limits[i][0], G[
+        #all((l[0] < G[i] < l[1] for i,l in enumerate(limits))
+
 
         for i in range(1, 7):
             # Gaps and blocks separately so we can tell the diff
