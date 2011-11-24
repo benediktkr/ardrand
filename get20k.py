@@ -24,6 +24,9 @@ elif algorithm == 'leastsig':
 elif algorithm == 'twol':
     s = ''.join(ard.twoleastsignrand(k))
 
+elif algorithm == 'vanilla':
+    s = ''.join(ard.vanilla(k))
+
 if "-p" in sys.argv:
     print s
 
