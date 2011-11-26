@@ -9,7 +9,8 @@ from itertools import groupby
 
 class Arduino(Serial):
     """The Arduino class communicates with the arduino board and
-    builds a string of random bits. Hold the state of the algs"""
+    builds a string of random bits. Hold the state of the algs.
+    All algs take in excatly one paramter - n."""
 
 
     def __init__(self, port="/dev/ttyUSB0", baudrate=9600, p=3):
@@ -34,7 +35,8 @@ class Arduino(Serial):
         return self.readline()[:-2]
 
     def meanrand(self, n):
-        """The Mean-RAND algorithm. Generates a 0-bit if the value read is below the mean
+        """Mean-RAND
+        The Mean-RAND algorithm. Generates a 0-bit if the value read is below the mean
         of the last b values. Two bits are generated and ran through a Neumann box"""
         bufsize = 100                   # b
         buf = deque([0]*bufsize)
@@ -80,7 +82,8 @@ class Arduino(Serial):
                 yield '0'
 
     def updownrand(self, n):
-        """First read a value v_0. Then use it to determine if the bit
+        """Updown-RAND
+        First read a value v_0. Then use it to determine if the bit
         b is 1 or 0. If we have v_1 > v_0 for the new value v_1 then
         we have b=1, otherwise b=0. In order to determine b we read
         two values (or more) and apply the vN box.
@@ -106,7 +109,8 @@ class Arduino(Serial):
             yield b
                     
     def mixmeanupdown(self, n):
-        """Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
+        """MixMeanUpdown-RAND
+        Generates a bit by calculating Mean-RAND XOR Updown-RAND"""
         m = self.meanrand(n)
         u = self.updownrand(n)
         
@@ -114,7 +118,8 @@ class Arduino(Serial):
             yield m.next()^u.next()
 
     def leastsigrand(self, n):
-        """For every analogRead(), use the least significant bit, and
+        """Leastsig-RAND
+        For every analogRead(), use the least significant bit, and
         vN-box Ask ymir what site he was talking about"""
         for i in xrange(n):
             #if i%50 == 0:
@@ -122,7 +127,8 @@ class Arduino(Serial):
             yield self.vnbox(lambda: self.readint()&1)
 
     def twoleastsignrand(self, n):
-        """For every two analogRead(), look at the XOR of the two
+        """Twoleastsign-RAND
+        For every two analogRead(), look at the XOR of the two
         least significant bits (of the latest two readings)"""
         for i in xrange(n):
             yield self.vnbox(lambda: self.readint()&1^self.readint()&2>>1)
@@ -138,7 +144,8 @@ class Arduino(Serial):
                 return str(b0)
             
     def vanilla(self, n):
-        '''Reeads from analogRead() a total of n bits (reads 10-bit integer at a time)
+        '''Vanilla
+        Reeads from analogRead() a total of n bits (reads 10-bit integer at a time)
         Yields 10 bits at a time instead of 1 like the others'''
 
         for i in xrange(n/10):
@@ -235,6 +242,9 @@ class StatTests:
         pass
 
 class FipsTests():
+    """All tests return at least a 2-tuple, where the 0-index element is if the
+    test was passed, the 1-index is the statistic and the rest is additional
+    info."""
     def __init__(self, bitstring):
         self.n = len(bitstring)
         if not self.n == 20000:
@@ -246,7 +256,7 @@ class FipsTests():
     def monobit(self):
         X1, n1 = self.st.monobit()
         if (9654 < n1) and (n1 < 10346):
-            return (True, n1)
+            return (True, X1, n1)
         return (False, X1, n1)
 
     def poker(self):
@@ -280,12 +290,13 @@ class FipsTests():
 
         for i in range(1, 7):
             # Gaps and blocks separately so we can tell the diff
+            # TODO if not lower < G or B < upper. 
             if (G[i] < limits[i][0]) or (G[i] > limits[i][1]):
-                return (False, i, X4, "gap")
+                return (False, X4, G[1:7], B[1:7])
             if (B[i] < limits[i][0]) or (B[i] > limits[i][1]):
-                return (False, i, X4, "block")
+                return (False, X4, G[1:7], B[1:7])
             
-        return (True, X4)
+        return (True, X4, G[1:7], B[1:7])
         
 class RawData:
     def __init__(self, l):
