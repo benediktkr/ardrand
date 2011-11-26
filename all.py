@@ -2,6 +2,7 @@
 results prettily and runs some more'''
 
 from arduino import Arduino, FipsTests
+import time
 
 ard = Arduino()
 algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
@@ -13,7 +14,9 @@ for alg in algs:
     for i in range(3):
         print "  [+] Run", i, ":"
         # Generate the bitstring
+        start = time.time()
         b = ''.join(alg(k))
+        print "    [ ] Birtrate:", (time.time()-start)/k, "bits/second"
         fips = FipsTests(b)
 
         mono, X1, n1 = fips.monobit()
