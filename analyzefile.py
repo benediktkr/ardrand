@@ -1,4 +1,5 @@
-from arduino import Arduino, StatTests
+from arduino import Arduino
+from stattests import StatTests
 import sys
 
 if len(sys.argv) != 2:

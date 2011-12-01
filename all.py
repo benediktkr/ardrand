@@ -1,7 +1,8 @@
 '''A program that runs all rand-algorithms three times, collects mean, prints
 results prettily and runs some more'''
 
-from arduino import Arduino, FipsTests
+from arduino import Arduino
+from stattests import FipsTests
 import time
 
 ard = Arduino(debug=True, dbglevel=50)

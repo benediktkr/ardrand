@@ -1,7 +1,8 @@
 #coding: utf-8
 """Just a short program that grabs a bitstring s and writes to a file or whatever"""
 
-from arduino import Arduino, StatTests
+from arduino import Arduino
+from stattests import StatTests
 from sys import stdin, argv
 
 ard = Arduino()

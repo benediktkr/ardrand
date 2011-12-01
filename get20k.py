@@ -1,4 +1,5 @@
-from arduino import Arduino, StatTests, FipsTests
+from arduino import Arduino
+from stattests StatTests, FipsTests
 
 import sys
 
