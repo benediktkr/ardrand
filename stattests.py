@@ -135,9 +135,9 @@ class FipsTests():
         for i in range(1, 7):
             # Gaps and blocks separately so we can tell the diff
             if not limits[i][0] < G[i] < limits[i][1]:
-                return (False, X4, G[1:7], B[1:7], i)
+                return (False, X4, G[1:7], B[1:7])
             if not limits[i][0] < B[i] < limits[i][1]:
-                return (False, X4, G[1:7], B[1:7], i)
+                return (False, X4, G[1:7], B[1:7])
             
         return (True, X4, G[1:7], B[1:7])
         
