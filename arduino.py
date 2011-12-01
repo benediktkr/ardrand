@@ -3,7 +3,7 @@
 from serial import Serial, SerialException
 from collections import defaultdict, deque 
 from math import floor, ceil
-from time import sleep
+from time import sleep, time
 from sys import stdout
 from itertools import groupby
 
@@ -13,9 +13,11 @@ class Arduino(Serial):
     All algs take in excatly one paramter - n."""
 
 
-    def __init__(self, port="/dev/ttyUSB0", baudrate=9600, p=3):
+    def __init__(self, port="/dev/ttyUSB0", baudrate=9600, p=3, debug = False, dbglevel = 100):
         Serial.__init__(self, port, baudrate)
         self.pin = p
+        self.debug = debug
+        self.dbglevel = dbglevel
 
     def readint(self):
         """Catch OSError because the Arudino tends to be become 'unavailible' and
@@ -43,37 +45,46 @@ class Arduino(Serial):
 
         # Fill buffer with initial values
         print "Initializing..."
+        start = time()
         for i in range(len(buf)):
             buf[i] = self.readint()
 
         meanval = float(sum(buf))/bufsize
-        print "...done"
+        print "...done (", time()-start, ") seconds"
         
         for i in xrange(n):
             #if i%50==0:
             #    print i
 
+            #yield self.vnbox(lambda: 1 if self.readint() > m else 0)
             """Generate two bits and run them through a von Neumann box.
             00/11 → discard, 10 → 1, 01 → 0"""
+            i = 0
             while True:
-
-                # A little tweak to test: later
-                # Read integers ar0 and ar1 and store in variables
-                # deque and decrease two values from meanval
-                # append ar0 and ar1 to buf in increase meanval
-                # b0 = 1 if ar0 > meanval else 0
-                # b1 = 1 if ar1 > meanval else 1
-                # epply neamann box on b0 and b1
                 meanval -= float(buf.popleft())/bufsize
                 buf.append(self.readint())
                 meanval += float(buf[-1])/bufsize
                 m = int(ceil(meanval))
 
+                
                 b0 = 1 if self.readint() > m else 0
                 b1 = 1 if self.readint() > m else 0
+
+                
                 if b0 == b1:
+                    i += 1
+                    if i % self.dbglevel == 0 and self.debug:
+                        print "Board may be stuck. I have read", i, "values and this is what i get now:", self.readint()
+                        print "DEBUG: My mean now:", m
+                        # We just ded a readint(), no waiting 
+                        start = time()
+                        self.readint()
+                        end = time()
+                        print "DEBUG (meanrand): Time between readings:", end-start, "seconds"
+
                     continue
                 else:
+                    i = 0
                     break
             # TODO: alter to what lestsig-RAND does ASAP. Code beauty.
             if b0 == 1:
@@ -115,7 +126,8 @@ class Arduino(Serial):
         u = self.updownrand(n)
         
         for i in xrange(n):
-            yield m.next()^u.next()
+            # Wasnt vnboxed
+            yield self.vnbox(lambda: m.next()^u.next())
 
     def leastsigrand(self, n):
         """Leastsig-RAND
@@ -134,13 +146,31 @@ class Arduino(Serial):
             yield self.vnbox(lambda: self.readint()&1^self.readint()&2>>1)
 
     def vnbox(self, phi):
+        i = 0
         while True:
+            #start = time()
             b0 = phi()   # Can i do this in one line?
             b1 = phi()
+            #end = time()
 
+
+            #string = "Bitrate:", (end-start)/2, "bits/second"
+            #sys.stdout.write('\b'*len(string))
+            #stdout.write(string)
+            #stdout.flush()
+            
             if b0 == b1:
+                i += 1
+                if i % self.dbglevel == 0 and self.debug:
+                    print "Board may be stuck. I have read", i, "values and this is what i get now:", self.readint()
+                    # We just ded a readint(), no waiting 
+                    start = time()
+                    self.readint()
+                    end = time()
+                    print "DEBUG: Time between readings:", end-start, "seconds"
                 continue
             else:
+                i = 0
                 return str(b0)
             
     def vanilla(self, n):

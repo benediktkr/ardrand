@@ -4,8 +4,11 @@ results prettily and runs some more'''
 from arduino import Arduino, FipsTests
 import time
 
-ard = Arduino()
-algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
+ard = Arduino(debug=True, dbglevel=50)
+#algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
+#algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
+algs = [ard.leastsigrand]
+
 k = 20000
 
 for alg in algs:
@@ -16,7 +19,9 @@ for alg in algs:
         # Generate the bitstring
         start = time.time()
         b = ''.join(alg(k))
-        print "    [ ] Birtrate:", (time.time()-start)/k, "bits/second"
+        end = time.time()
+        print "    [ ] Birtrate:", k/(end-start), "bits/second"
+        print "    [ ] Time:", end-start, "seconds"
         fips = FipsTests(b)
 
         mono, X1, n1 = fips.monobit()

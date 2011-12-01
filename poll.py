@@ -39,6 +39,7 @@ if __name__ == "__main__":
 
     if len(args) == 4:
         n = int(args[3])
+        print "Collecting", n, "values"
         pollEndlessly = False
 
     prefix = "/home/benedikt/hr/loka"
@@ -52,6 +53,7 @@ if __name__ == "__main__":
     #fname = "%s/5sek_2h_herbergi.txt" % prefix
     
     for x in infrange(n, inf=pollEndlessly):
+        print x,
         try:
             # By first applying the int-function to the numbers we
             # throw exceptions when the arduino sends a malformed
