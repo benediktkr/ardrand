@@ -3,12 +3,13 @@ results prettily and runs some more'''
 
 from arduino import Arduino
 from stattests import FipsTests
-import time
+from time import time
+from urandom import urandomtest
 
 ard = Arduino(debug=True, dbglevel=50)
 #algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
-algs = [ard.leastsigrand]
+algs = [urandomtest, ard.vanilla, ard.leastsigrand]
 
 k = 20000
 
@@ -18,9 +19,9 @@ for alg in algs:
     for i in range(3):
         print "  [+] Run", i, ":"
         # Generate the bitstring
-        start = time.time()
+        start = time()
         b = ''.join(alg(k))
-        end = time.time()
+        end = time()
         print "    [ ] Birtrate:", k/(end-start), "bits/second"
         print "    [ ] Time:", end-start, "seconds"
         fips = FipsTests(b)
