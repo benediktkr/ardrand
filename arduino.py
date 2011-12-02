@@ -4,7 +4,7 @@ from serial import Serial, SerialException
 from collections import deque 
 from time import sleep, time
 from sys import stdout
-
+from math import ceil
 
 class Arduino(Serial):
     """The Arduino class communicates with the arduino board and
