@@ -92,6 +92,9 @@ class FipsTests():
     def __init__(self, bitstring):
         self.n = len(bitstring)
         if not self.n == 20000:
+            # Uhm. Not really sure how to do a proper excetion
+            # raising, this'll have to do
+            print "n != 20000"
             raise Exception
         self.s = bitstring
         # HACK: Create instance of class so we can use same names. 

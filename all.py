@@ -6,7 +6,7 @@ from stattests import FipsTests
 from time import time
 from urandom import urandomtest
 
-ard = Arduino(debug=True, dbglevel=50)
+ard = Arduino(debug=True, dbglevel=350)
 #algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 algs = [urandomtest, ard.vanilla, ard.leastsigrand]
