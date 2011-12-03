@@ -23,7 +23,9 @@ class Prng:
         '''avr-libc PRNG
         According to http://arduino.cc/en/Reference/Long a long on
         arduino (and therefor avr) is 4 bytes. Produces n//(8*4) bytes (~n
-        bits) from the avr-libc prng'''
+        bits) from the avr-libc prng
+
+        NOTE: not very pythonic'''
 
         for i in range(n//(8*4)):
             # let b be 4 bytes from the prng
