@@ -178,10 +178,11 @@ class Arduino(Serial):
         Yields 10 bits at a time instead of 1 like the others'''
 
         for i in xrange(n/10):
-            b = bin(self.readint())[2:]
-            m = 10 - len(b)
-            if m > 0:
-                b = '0'*m + b
+            # b = bin(self.readint())[2:]
+            # m = 10 - len(b)
+            # if m > 0:
+            #     b = '0'*m + b
+            b = format(self.readint(), '010b')
             yield b
 
         bitsLeft = 10 - (n/10)*10

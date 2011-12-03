@@ -27,7 +27,7 @@ class StatTests:
         '''Divide the sequence s into k non-overlapping parts, each of length m
         Let N[i] count the number of occurances of the ith type of sequnce
         There are 2^m possible strings so we have that 0 < i <= 2^m'''
-        k = int(floor(self.n/m))
+        k = int(self.n//m)              # Floored division
 
         if not k >= 5*2**m:
             print "Lower your m! (Or write this code)"

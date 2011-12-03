@@ -5,8 +5,9 @@ random() and srandom().
 
 This program is implemented after the file
     libc/stdlib/random.c
-from avr-libc-1.7.1
-'''
+from avr-libc-1.7.1.
+
+Written in a classless C-manner to be as like the or possible.'''
 
 # python doesn't have constants, right?
 RANDOM_MAX = 0x7FFFFFFF

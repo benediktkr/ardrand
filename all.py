@@ -4,12 +4,16 @@ results prettily and runs some more'''
 from arduino import Arduino
 from stattests import FipsTests
 from time import time
-from urandom import urandomtest
+from prng import Prng
 
-ard = Arduino(debug=True, dbglevel=350)
-#algs = [ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
+ard = Arduino(debug=True, dbglevel=1500)
+prng = Prng()
+allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
-algs = [urandomtest, ard.vanilla, ard.leastsigrand]
+#algs = [urandomtest, ard.vanilla, ard.leastsigrand]
+
+#algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
+algs = [prng.urandom, prng.avrrandom, ard.vanilla]
 
 k = 20000
 
