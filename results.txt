@@ -1,0 +1,190 @@
+[ ] /dev/urandom
+  [+] Run 0 :
+    [ ] Birtrate: 4827420.15308 bits/second
+    [ ] Time: 0.00414299964905 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 4.6208 n1 = 9848
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 18.8544
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 34.531527766 G = [2595, 1266, 598, 294, 178, 157] B = [2642, 1258, 623, 293, 140, 135]
+  [+] Run 1 :
+    [ ] Birtrate: 5354658.49611 bits/second
+    [ ] Time: 0.00373506546021 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 1.28 n1 = 9920
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 12.9408
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 14.7086412753 G = [2496, 1269, 614, 307, 163, 162] B = [2574, 1217, 615, 292, 153, 162]
+  [+] Run 2 :
+    [ ] Birtrate: 5360817.99591 bits/second
+    [ ] Time: 0.00373077392578 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 1.445 n1 = 10085
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 15.4688
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 23.9946268371 G = [2535, 1203, 629, 306, 140, 161] B = [2466, 1255, 627, 288, 153, 184]
+[ ] Vanilla
+  [+] Run 0 :
+    [ ] Birtrate: 1703.04672222 bits/second
+    [ ] Time: 11.7436590195 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 85.0208 n1 = 10652
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 2724.3712
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 1633.05408046 G = [1967, 1311, 524, 334, 100, 210] B = [1657, 773, 1022, 748, 144, 102]
+  [+] Run 1 :
+    [ ] Birtrate: 1927.8478256 bits/second
+    [ ] Time: 10.3742628098 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 678.5928 n1 = 11842
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 7619.4688
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 6415.38228702 G = [2814, 1262, 594, 120, 0, 93] B = [1045, 1096, 2364, 377, 1, 0]
+  [+] Run 2 :
+    [ ] Birtrate: 1671.03864855 bits/second
+    [ ] Time: 11.9686040878 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 265.8818 n1 = 11153
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 8104.0192
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 8360.13648542 G = [2776, 777, 375, 848, 0, 0] B = [775, 1623, 2376, 1, 0, 0]
+[ ] avr-libc PRNG
+  [+] Run 0 :
+    [ ] Birtrate: 3800737.6195 bits/second
+    [ ] Time: 0.00526213645935 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 40.5 n1 = 9550
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 94.8544
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 54.2645731165 G = [2366, 1238, 660, 354, 169, 187] B = [2570, 1265, 616, 272, 126, 126]
+  [+] Run 1 :
+    [ ] Birtrate: 3869105.66856 bits/second
+    [ ] Time: 0.0051691532135 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 22.8488 n1 = 9662
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 91.1168
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 37.7888025253 G = [2467, 1247, 636, 329, 165, 187] B = [2570, 1289, 626, 307, 135, 104]
+  [+] Run 2 :
+    [ ] Birtrate: 3359070.99668 bits/second
+    [ ] Time: 0.0059540271759 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 24.6402 n1 = 9649
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 106.2208
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 38.4149041 G = [2439, 1272, 648, 325, 159, 166] B = [2588, 1310, 583, 266, 156, 114]
+[ ] Leastsig-RAND
+  [+] Run 0 :
+    [ ] Birtrate: 24.9937712725 bits/second
+    [ ] Time: 800.199368954 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.5 n1 = 9950
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 220.6848
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 421.807519645 G = [3055, 984, 571, 325, 154, 176] B = [3102, 953, 554, 331, 168, 158]
+  [+] Run 1 :
+    [ ] Birtrate: 24.9108809525 bits/second
+    [ ] Time: 802.862011909 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.7442 n1 = 10061
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 157.5168
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 302.180103333 G = [3009, 973, 568, 317, 175, 159] B = [2919, 1032, 580, 356, 150, 163]
+  [+] Run 2 :
+    [ ] Birtrate: 24.8695403284 bits/second
+    [ ] Time: 804.19660902 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 1.4792 n1 = 9914
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 221.888
+    [ ] Runs test
+        [!] Failed
+[ ] Mean-RAND
+  [+] Run 0 :      # Lot of debug readings at 350 but never above
+Initializing...
+...done ( 1.95783400536 ) seconds
+    [ ] Birtrate: 2.75287258342 bits/second
+    [ ] Time: 7265.13828516 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 1.125 n1 = 9925
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 1036.1088
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 2003.67969487 G = [3853, 1546, 529, 208, 80, 48] B = [3889, 1556, 504, 210, 70, 35]
+  [+] Run 1 :     # 6 debug readings at 350
+Initializing...
+...done ( 0.497115850449 ) seconds
+    [ ] Birtrate: 4.66501102254 bits/second
+    [ ] Time: 4287.23531485 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.32 n1 = 9960
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 2220.1216
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 4381.58404427 G = [4493, 1736, 410, 126, 38, 23] B = [4562, 1664, 403, 145, 38, 14]
+  [+] Run 2 :      # 4 debug readings
+Initializing...  
+...done ( 0.493004083633 ) seconds
+    [ ] Birtrate: 4.57788738254 bits/second
+    [ ] Time: 4368.82743692 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.0002 n1 = 9999
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 2308.9792
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 4461.09783325 G = [4608, 1605, 419, 142, 53, 15] B = [4576, 1656, 424, 117, 46, 23]        [ ] X4 = 439.373321486 G = [3052, 1012, 593, 307, 173, 161] B = [3148, 971, 529, 319, 178, 159]
