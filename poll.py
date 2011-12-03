@@ -53,7 +53,10 @@ if __name__ == "__main__":
     #fname = "%s/5sek_2h_herbergi.txt" % prefix
     
     for x in infrange(n, inf=pollEndlessly):
-        print x,
+        # Sleep every 15 000 reading, for increasing amount of time
+        if x%15000:
+            print "Thats it, sleeping for", x/15000, "seconds". 
+            sleep(x/15000)
         try:
             # By first applying the int-function to the numbers we
             # throw exceptions when the arduino sends a malformed
