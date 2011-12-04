@@ -13,7 +13,8 @@ allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updown
 #algs = [urandomtest, ard.vanilla, ard.leastsigrand]
 
 #algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
-algs = [ard.twoleastsignrand, ard.updownrand]
+#algs = [ard.twoleastsignrand, ard.updownrand]
+algs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.twoleastsignrand, ard.meanrand]
 
 k = 20000
 
@@ -26,7 +27,7 @@ for alg in algs:
         start = time()
         b = ''.join(alg(k))
         end = time()
-        print "    [ ] Birtrate:", k/(end-start), "bits/second"
+        print "    [ ] Bitrate:", k/(end-start), "bits/second"
         print "    [ ] Time:", end-start, "seconds"
         fips = FipsTests(b)
 
