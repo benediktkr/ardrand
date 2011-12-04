@@ -59,18 +59,26 @@ class StatTests:
               - number of blocks'''
         
         k = 10 if k == 0 else k
-        B = [0]*(k+1)
+
+        # Uncommen to only count 1..k runs
+        #B = [0]*(k+1)
+        #G = B[:]
+
+        # Count all groups
+        # Let c be the length of the longest group
+        c = max([len(''.join(a[1])) for a in groupby(self.s)])
+        B = [0]*(c+1)
         G = B[:]
-
-        #for i in range(1, k+1):
-
+        
         # Maður lifandi, þetta er sniðugt!
         for groupname, group in groupby(self.s):
             i = len(''.join(group))
-            if i > k:
-                # NOTE: Not sure if the FIPS specifications expect this behaviour. 
-                continue
-            elif groupname == '1':
+            #if i > k:
+            #    # NOTE: Not sure if the FIPS specifications expect this behaviour. 
+            #    continue
+            #elif groupname == '1':
+
+            if groupname == '1':
                 B[i] += 1
             else:
                 G[i] += 1
@@ -143,6 +151,18 @@ class FipsTests():
                 return (False, X4, G[1:7], B[1:7])
             
         return (True, X4, G[1:7], B[1:7])
+
+    def longruns(self):
+        '''The long runs test is passed if there are no runs of length
+        34 or more. Return a 1-tuple to keep style'''
+
+        X4, G, B = self.st.runs(10)
+        # We use 0 based indexing, so a run of length 34 implies that
+        # G or B has length 34+1 or greater
+        if len(G) >= 34+1 or len(B) >= 34+1:
+            return (False)
+        else:
+            return (True)
         
 class RawData:
     def __init__(self, l):
