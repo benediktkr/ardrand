@@ -69,6 +69,9 @@ class StatTests:
         c = max([len(''.join(a[1])) for a in groupby(self.s)])
         B = [0]*(c+1)
         G = B[:]
+
+        # If so happens that c > k, we get IndexErrors below when we calculate X4
+        k = c if c > k else k
         
         # Maður lifandi, þetta er sniðugt!
         for groupname, group in groupby(self.s):
@@ -84,7 +87,7 @@ class StatTests:
                 G[i] += 1
 
         e = lambda i: float(self.n-i+3)/2**(i+2) # Returns a float
-        E = [e(i) for i in range(1, k)]
+
 
         X4 = sum([((B[i] - e(i))**2 + (G[i] - e(i))**2)/e(i) for i in range(1, k+1)])
         
