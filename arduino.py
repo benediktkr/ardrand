@@ -12,16 +12,21 @@ class Arduino(Serial):
     All algs take in excatly one paramter - n."""
 
 
-    def __init__(self, port="/dev/ttyUSB0", baudrate=9600, p=3, debug = False, dbglevel = 100):
+    def __init__(self, port="/dev/ttyUSB0", baudrate=115200, p=3, debug = False, dbglevel = 100):
         Serial.__init__(self, port, baudrate)
         self.pin = p
         self.debug = debug
         self.dbglevel = dbglevel
 
     def readint(self):
-        """Catch OSError because the Arudino tends to be become 'unavailible' and
-        check if we read a digit because we sometimes get malformed strings.
-        TODO: fix this"""
+        """Catch OSError because the Arudino tends to be become
+        'unavailible' and check if we read a digit because we
+        sometimes get malformed strings.  Somtimes it raises a
+        SerialException with the message 'device reports readiness to
+        read but returned no data'
+
+        TODO: What does 'unavailible mean?  Why do we get malformed
+        strings?"""
         self.write("POLL " + str(self.pin))
         while True:
             try:
@@ -29,8 +34,21 @@ class Arduino(Serial):
                 if i.isdigit():
                     return int(i)
             except OSError as e:
-                print "OSError sleeping for 10 secs \n", e
+                if self.debug:
+                    print "OSError:", e, "arduino.py: sleeping for 10 sec"
                 sleep(10)
+            except SerialException as e:
+                '''From the pyserial code, "Disconnected devices, at
+                least on Linux, show the behavior that they are always
+                ready to read immediately but reading returns nothing."
+
+                http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm
+
+                Also, handling SerialException here? Handling
+                exceptions here at all?'''
+                if self.debug:
+                    print "SerialException:", e, "arduino.py: sleeping for 1 sec"
+                    sleep(1)
     def poll(self):
         self.write("POLL " + str(self.pin))
         return self.readline()[:-2]
@@ -43,14 +61,19 @@ class Arduino(Serial):
         buf = deque([0]*bufsize)
 
         # Fill buffer with initial values
-        print "Initializing..."
-        start = time()
+
+        if self.debug:
+            print "Initializing..."
+            start = time()
+            
         for i in range(len(buf)):
             buf[i] = self.readint()
 
+        if self.debug:
+            print "...done (", time()-start, ") seconds"
+
         meanval = float(sum(buf))/bufsize
-        print "...done (", time()-start, ") seconds"
-        
+
         for i in xrange(n):
             #if i%50==0:
             #    print i
