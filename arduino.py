@@ -1,5 +1,9 @@
 #coding: utf-8
 
+'''The Arduino class, inherits Serial class and contains RAND algs.
+
+For the kid playing space station on the schoolyard.'''
+
 from serial import Serial, SerialException
 from collections import deque 
 from time import sleep, time
@@ -211,4 +215,13 @@ class Arduino(Serial):
         bitsLeft = 10 - (n/10)*10
         b = bin(self.readint())[2:]
         yield b[:bitsLeft]
+
+    def onboardtlsr(self, n):
+        '''Onboard Twoleastsign-RAND
+        '''
+        for i in range(n):
+            self.write("TLSR " + str(self.pin))
+            yield self.read(1)
+        
+        
         
