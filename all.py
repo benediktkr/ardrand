@@ -6,7 +6,7 @@ from stattests import FipsTests
 from time import time
 from prng import Prng
 
-ard = Arduino(debug=False, dbglevel=1500)
+ard = Arduino(baudrate=9600, debug=False, dbglevel=1500)
 prng = Prng()
 allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
@@ -14,7 +14,7 @@ allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updown
 
 #algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.twoleastsignrand, ard.updownrand]
-algs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.twoleastsignrand, ard.meanrand]
+algs = [ard.vanilla, prng.urandom]
 
 k = 20000
 
@@ -34,6 +34,7 @@ for alg in algs:
         mono, X1, n1 = fips.monobit()
         poker, X3 = fips.poker()
         runs, X4, G, B = fips.runs()
+        longruns = fips.longruns()
         
         #Xmeanl.append((X1, X3, X4))
         print "    [ ] Monobit test"
@@ -47,7 +48,10 @@ for alg in algs:
         print "    [ ] Runs test"
         print "        [+] Passed" if runs else "        [!] Failed"
         print "        [ ] X4 =", X4, "G =", G, "B =", B
-        
+
+        print "    [ ] Long runs test"
+        print "        [+] Passed" if longruns else "        [!] Failed"
+
     #print "  [+] Mean over the X statistics:", sum(Xmeanl, 0.0)/len(Xmeanl)
     
         
