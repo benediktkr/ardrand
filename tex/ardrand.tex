@@ -1,0 +1,359 @@
+\documentclass[a4paper]{article}           % Switch to report for front page
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[utf8]{inputenc}
+%\usepackage[icelandic]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}                      % Allows more fine-grained control over line spacing
+\usepackage{fancyhdr}                      % Headers and footers
+\usepackage{lastpage}                      % Allows references to the last page of the document
+\usepackage{chngpage}                      % Change format mid-page ?
+\usepackage{soul}                          % Highlights text, with \hl{}
+\usepackage[usenames,dvipsnames]{color}    % Add color to text
+\usepackage{graphicx,float,wrapfig}
+\usepackage{ifthen}                        % \ifthenelse{}
+\usepackage{listings} 
+%\usepackage{courier}                      % Write in a monospace font
+%\usepackage{geometry}                      % Because 'fullpage' is outdated
+\usepackage{hyperref}
+
+\newtheorem{mydef}{Definition}
+\newcommand{\Title}{The Arduino as a Hardware Random-Number Generator}
+\newcommand{\SubTitle}{Final Report}
+\newcommand{\DueDate}{\today} % Or \today
+\newcommand{\Class}{Ardrand}
+\newcommand{\AuthorClearSpace}{3in}    % How far below the title the author name shoudl appear
+\newcommand{\ClassInstructor}{Ýmir Vigfússon}
+\newcommand{\AuthorName}{Benedikt Kristinsson}
+\newcommand{\DueLang}{}     % Icelandic   (perhaps some ifelse on language pack)
+%\newcommand{\DueLang}{Due on}   % English
+
+%\topmargin=-0.45in      
+%\evensidemargin=0in     
+%\oddsidemargin=0in      
+%\textwidth=6.5in        
+%\textheight=9.0in       
+%\headsep=0.25in         
+
+% This is the color used for comments below
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0}
+\definecolor{MyDarkRed}{rgb}{0.4,0.0,0.0}
+
+
+\lstloadlanguages{Python}
+\lstset{language=Python,                        
+       %frame=single,                               % Single frame around code
+       %basicstyle=\small\ttfamily,                 % Use small true type font
+        basicstyle=\small,                          % Don't use ttf
+        keywordstyle=[1]\color{Blue}, %\bf          % functions green (bold commented out)
+        keywordstyle=[2]\color{Green},              % function arguments purple
+        keywordstyle=[3]\color{Red}\underbar,       % User functions underlined and blue
+        identifierstyle=,
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkRed}\small,
+        stringstyle=\color{MyDarkGreen},              % Strings
+        showstringspaces=false,                     % Don't put marks in string spaces
+        tabsize=4,
+        % To add more keywords
+       %morekeywords={},
+        % Function parameters
+       %morekeywords=[2]{on, off, interp},
+        %%% Put user defined functions here
+       %morekeywords=[3]{FindESS, homework_example},
+        %
+       %morecomment=[l][\color{Grey}]{...},        % Line continuation (...) like blue comment
+       %numbers=left,                              % Line numbers on left
+       %firstnumber=1,                             % Line numbers start with line 1
+       %numberstyle=\tiny\color{Grey},             % Line numbers are blue
+       %stepnumber=1                               % Line numbers go in steps of 1
+        }
+
+% Setup the header and footer
+\pagestyle{fancy} % Pagestyle allows for header/foother
+%\pagestyle{plain} % No header/footerer
+\lhead{\AuthorName}                                                 
+\chead{\SubTitle}  
+\rhead{\Class}  
+%\cfoot{\thepage}   
+% \rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}}
+\renewcommand\headrulewidth{0.4pt}                     
+%\renewcommand\footrulewidth{0.4pt}                     
+% This is used to trace down (pin point) problems in latexing a document:
+%\tracingall
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Some tools
+
+% Includes a figure
+% The first parameter is the label, which is also the name of the figure
+%   with or without the extension (e.g., .eps, .fig, .png, .gif, etc.)
+%   IF NO EXTENSION IS GIVEN, LaTeX will look for the most appropriate one.
+% The second parameter is the width of the figure normalized to column width
+%   (e.g. 0.5 for half a column, 0.75 for 75% of the column)
+% The third parameter is the caption.
+\newcommand{\scalefig}[3]{
+  \begin{figure}[ht!]
+    % Requires \usepackage{graphicx}
+    \centering
+    \includegraphics[width=#2\columnwidth]{#1}
+    %%% I think \captionwidth (see above) can go away as long as
+    %%% \centering is above
+    %\captionwidth{#2\columnwidth}%
+    \caption{#3}
+    \label{#1}
+  \end{figure}}
+
+% Includes code
+% The first parameter is the label, which also is the name of the script
+%   with the file extension the '#1' in the command belove
+% The second parameter is the optional caption.
+\newcommand{\code}[2]
+{\begin{itemize}\item[]\lstinputlisting[caption=#2,label=#1]{#1}\end{itemize}}
+  
+
+\setcounter{secnumdepth}{0}
+\newcommand{\problem}[2]
+{
+   \subsubsection*{\sc{#1}}
+               #2
+}
+\newcommand{\tmpsection}[1]{}
+\let\tmpsection=\section
+
+\renewcommand{\section}[2]{
+
+    \ifthenelse{
+      \equal{#2}{Heimildir} % I have to be oddly specific here
+    }
+    {
+      \tmpsection{\sc{#1} }
+      \tmpsection{\sc{#2} }
+    }
+    {\tmpsection{\sc{#1} } }
+      
+
+}
+
+
+\title{
+    \Class:\ \Title
+    \ifthenelse{\equal{\SubTitle}{}}{}{\\{\SubTitle}}
+    }
+\date{\small{\DueLang\ \DueDate}}
+\author{\AuthorName\\Advisor: \ClassInstructor}
+
+
+\begin{document}
+\maketitle
+
+% Uncomment the \tableofcontents and \newpage lines to get a Contents page
+% Uncomment the \setcounter line as well if you do NOT want subsections
+%       listed in Contents
+% Remeber to compile twice
+%\setcounter{tocdepth}{1}
+%\tableofcontents
+%\newpage
+
+%\clearpage
+%x\section{Lausn verkefnis og útfærsla}
+
+\begin{abstract}
+  How doez I maek abstract?
+\end{abstract}
+
+\section{Introduction}
+% Motivation
+
+So much in our lives may seem random --- so thinking that generating randomness might seem easy at first glance. But when one inquires further one quickly realizes that due to the deterministic nature of CPUs, it is impossible for them to generate random numbers. 
+
+However, there is a great need for unpredictable values in cryptography. Almost all encryption schemes relay on the notion of secret keys so those keys must be generated in a unpredictable way, or else the encryption scheme is useless. Examples of this are the keystream in a one-time-pad, the primes in the RSA algorithm and the challenges used in a challenge-response system\cite{menezes1996,anthes2011}.
+
+Many secure encryption protocols use nonces (numbers used once) to add ``noise'' in messages\cite{anthes2011}. If these numbers are predictable, the nonces do not serve much purpose. 
+
+Since regular computers are unable to produce truly random numbers, psuedorandom number generators (denoted PRNG) are mostly used. A PRNG is a one-way function $f$ the generates random sequnces, of either integers or bits, from an intial seed $s$ and then applies the function iteratively to generate the sequcene\cite{menezes1996}. In a cryptographic system, a weak source for the seed weakens the whole system. It may allow an adversary to break it, as was perhaps most notably demonstrated by breaking the method that the Netscape browser used to seed its PRNG\cite{netscape}. 
+
+Thus a PRNG can only be random if its seed is truly random and its output is only a function of the seed data, the actual entropy of the output can never exceed that of the seed. However, it can be computationally infeasible to distinguish between a good PRNG and a perfect RNG. A true random number generator (TRNG) uses a non-deterministic source to produce randomness (e.g. measuring chaotic systems in nature). 
+
+The Arduino is a free and open-source electronics sigle-board microcontroller with an Atmel AVR CPU. There are several different version of the board available\footnote{See: \url{http://arduino.cc/en/Main/Boards}}, but we used the Arduino Duemilanove\footnote{See: \url{http://arduino.cc/en/Main/ArduinoBoardDuemilanove} for full specifications} board (with the ATMega328\cite{atmegads} microcontroller) for this research. It has 6 analog inputs. 
+
+The Arduino Reference Manual suggests that reading from an unconnected analog pin gives a ``fairly random'' number\cite{ardref}, ideal for seeding the avr-libc PRNG\footnote{Archival of this claim: \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}}. We will later show that this is not true and, and that the reading from an unconnected pin is not very random at all. We will also show that building a RNG with the Arduino is infeasible and that if you follow the Arduino Reference Manual, the sheer lack of possible seeds makes it relatively easy for an adversary to guess the seed.
+
+We also attempt to build a random bit generator from the Arduino (without adding extra hardware), but we find that this is infeasible. But we will demonstrate a few algorithms and discuss how they perform exposed to statistical testing and the possibilities of finding some entropy. 
+
+\section{Related Work -  Background}
+
+
+
+
+\section{Theoretical Considerations}
+
+Let us first define a few terms\cite{menezes1996}.
+
+\begin{mydef}
+A random bit generator (RBG) is a device or algorithm that outputs a sequence of statistically independent and unbiased binary digits.   
+\end{mydef}
+
+A random bit generator can easily be used to generate random numbers (turned into a random number generator). If we desire an integer in the interval $[0, n]$ we can simply generate $\lfloor \lg n \rfloor + 1$ bits and cast over to an integer. If the result exceeds $n$, one option is to discard it and generate a new number. 
+
+\begin{mydef}
+  
+  A pseudorandom random bit generator (PRBG) is a deterministic algorithm or program that given a truly random binary sequence of length $k$, outputs a binary sequence of of length $l$. The input to the PRGB is called the seed, while the output is called a pseudorandom bit sequence. 
+
+  % Menezes says l >> k, figure out if he means bitshifting. 
+  
+\end{mydef}
+
+Note that the output from a PRBG is not random. Given the deterministic nature of the algorithm, it will always produce the same sequence for any given seed value. 
+
+\begin{mydef}
+Let $s$ be a binary sequence. We say that a run in $s$ of length $n$ is a subsequence consisting of either $n$ consecutive 0's or 1's. Note that a run is neither preceded or proceeded by the same symbol. We call a run of 1's a block and a run of 0's a gap. 
+\end{mydef}
+
+Determining mathematically what is random and what is not is a very hard task --- and proving that a generator is indeed generating random bits is impossible to prove\cite{menezes1996}. There are statistical tests that allow us to detect certain weaknesses a RBG might have. Note that just because a bit sequence from a generator is accepted by the statistical tests, this is not a guarantee that it is indeed random. On the other hand, if it is rejected, we can say that it is non-random. In other word, when a bitsequence is ``accepted'' it really is ``not rejected''. 
+
+
+\subsection{$\chi^2$-distribution}
+
+We interpret the results of the statistical tests by means of the $\chi^2$-distributions. It is used in the common $\chi^2$-tests to compare goodness-of-fit. The $\chi^2$ distribution with $k$ degrees of freedom is given by
+
+\[
+f(x, k) =
+\begin{cases}
+  \frac{1}{2^{k/2}\Gamma(k/2)}\,x^{k/2 - 1} e^{-x/2},  & x \geq 0; \\ 0, & \text{otherwise}.
+\end{cases}
+\]
+
+where $\Gamma$ is the gamma-function, given by
+
+\[
+\Gamma(n) = (n-1)!.
+\]
+
+Then we can take our observed data and find an $\chi^2$ statistic, denoted $X^2$, such that
+
+\[
+X^2 = \sum_i^k \frac{(O_i - E_i)^2}{E_i}
+\]
+
+for all $i$, where $E_i$ denotes the expected number and $O_i$ denotes the observed number. Then the number $X^2$ tells us about the significance of the test, given a significance level $\alpha$. This is usually done by means of a table of percentiles. One is found in \cite[p. 178]{menezes1996} and replicating it here is redundant. 
+
+The degrees of freedom is the number of values that are free to vary. It is worth noting that if we have $m$ different values in our calculations, we can often figure out the $m^{th}$ value from the $m-1$ other values, so then we would have $k=m-1$ degrees of freedom. This is often the case for our tests, such as the Monobit test. 
+
+\subsection{Statistical tests used}
+
+ Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivations for this is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. 
+
+Let $s = s_0, s_1, \ldots, s_{n-1}$ be a binary sequence of length $n$. A single bitstring of length $n = 20000$ from our generator is subjected to each of these tests. If any one of the tests fail, we conclude that the output of our generator is non-random. 
+
+\subsubsection{Monobit test}
+
+In a random sequence, one would expect that the number of 1's and 0's are about the same. This test gives us a statistic on this distribution. Let $n_o$ denote the number of 0's and $n_1$ the number of 1's. We then find the statistic
+
+\begin{equation}
+X_1 = \frac{(n_0 - n_1)^2}{2}
+\end{equation}
+
+which approximately follows a $\chi^2$ distribution with $1$ degree of freedom (given $n$ and $n_0$ we can easily figure out $n_1$). 
+
+\subsubsection{Poker test}
+
+The poker test tests for certain sequences of five numbers (bits) at a time, based on hand in poker. In a random sequence we would expect that each hand would appear approximately the same number of times in $s$. Let $m$ be a positive integer such that 
+
+\[
+\lfloor \frac n m \rfloor \geq 5 \cdot 2^m  
+\]
+
+and let $k = \lfloor \frac n m \rfloor$. We divide the sequence $s$ into $k$ non-overlapping parts of length $m$ and let $n_i$ denote the number of sequences of ``type'' $i$.
+
+For a binary sequence $s_i \in s$, where $|s_i| = m$ , we let $n_i$ be the number of sequences where $i$ equals the decimal representation of $s_i$. Note that $0 \leq i \leq 2^m$. 
+
+The statistic used is then
+
+\begin{equation}
+X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
+\end{equation}
+
+which approximately follows a $\chi^2$ distribution with $2k - 2$ degrees of freedom.
+ 
+\subsubsection{Runs test}
+
+The runs test determines if the number of runs (see \textit{Definition 3}) in $s$ is what is expected of a random sequences. The expected number of gaps, or blocks, of length $i$ in a sequence of length $n$ is
+
+\[
+e_i = \frac{n-i+3}{2^{i+2}}.
+\]
+
+Let $k$ be equal to the largest integer $i$ for which $e_i \geq 5$, or $k = \max_i e_i \geq 5$. Let $B_i, G_i$ be the number of blocks and gaps, respectively, of length $i$, for each $ 1 \leq i \leq k$. The statistic used is then
+
+\begin{equation}
+X_4 = \sum_{i=1}^k \frac{(B_i - e_i)^2}{e_i} + \sum_{i=1}^k \frac{(G_i - e_i)^2}{e_i}
+\end{equation}
+
+which approximately follows a $\chi^2$ distribution with 2k-2 degrees of freedom. We note that this is exactly finding the $\chi^2$ statistic since the number of runs is the sum of all gaps and blocks. 
+
+\subsection{FIPS140-1 bounds}
+
+We use the FIPS-140-1 bounds\cite{fips140} for the tests of our Arduino RBG. Let $s$ be a bit sequence of length 20 000. The documents states explicit bounds as follows:
+
+\begin{description}
+\item[Monobit test] The test is passed if $9.654 < X_1 < 10.346$ and the number $n_1$ of 1's should satisfy $9654 < n_1 < 10346$.
+\item[Poker test] The statistic $X_3$ is computed for $m=4$ and the test is passed if $1.03 < X_3 < 57.4$. 
+\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. 
+
+  \begin{table}[h!]
+    \begin{center}
+      \begin{tabular}{| l | l |}
+        \hline
+        Length of run & Required Interval \\
+        \hline
+        \hline
+        1 & 2267 - 2733 \\
+        2 & 1079 - 1421 \\
+        3 & 502 - 748 \\
+        4 & 223 - 403 \\
+        5 & 90 - 223 \\
+        6 & 90 - 223 \\
+        \hline
+      \end{tabular}
+    \end{center}
+    \caption{Required intervals for runs test as specified by FIPS-140-1}
+  \end{table}
+
+\item[Long runs test] The long runs test is passed if there are no runs of length greater than 34 in the bit sequence $s$. 
+\end{description}
+
+\subsection{NIST Security Levels}
+
+National Institute of Standards and Technology (NIST, America) has defined\cite{fips140} four basic security levels for cryptographic modules, such as RBGs and RNGs, as well as explicit bounds for statistical tests a RBG must satisfy. The security levels can be outlined as
+
+\begin{description}
+\item[Security level 1] is the lowest level of security that specifies basic requirements for a cryptographic module. No physical mechanisms are required in the module beyond protection-grade equipment. It allows software cryptography functions to be performed by a regular computer. Examples of systems of level 1 include Integrated Circuit Boards and add-on security products. 
+
+\item[Security level 2] adds the requirement for tamper-proof coatings and seals, or pick-resistant locks. The coatings or seals would be placed on the module so that it would have to be broken in order to attain physical access to the device. It also adds the requirement that a module must authenticate that an operator is authorized to assume as specific role. 
+
+\item[Security level 3] extends the requirements of level 2 to prevent the intruder from gaining access to critical security parameters within the module and if a cover is opened or removed, the critical parameters are zeroized. 
+
+\item[Security level 4] is the highest level of security. It protects the module from compromise of its security by environmental factors, such as voltage or temperature fluctuations. If one attempts to cut through an enclosing of the module, it should detect this attempt and zeroize all sensitive data. Most existing products do not meet this level of security. 
+\end{description}
+
+Although we were not aiming for physical security in this research, aiming for security level 1 seems like a reasonable decision. Note that in order for a device to conform to any of the security modules it has be able to perform self-tests, both at request and start-up. We implemented the tests in the Python programming language on a general-purpose computer. 
+
+FIPS140-1 specifies that the sample must be 20 000 bits, or 2.5KB. But the Arduino Duemilanove only has 2 KB of RAM. Luckily, it has a 32KB Flash memory which could be utilized to implement the statistical tests on the Arduino itself. 
+
+
+\section{Experimental Results}
+
+\section{Breaking the Arduino as a RNG}
+
+\section{Conclusions}
+
+\bibliography{ardrand}{}
+\bibliographystyle{plain}
+
+
+\end{document}
+
+% Stuff to mention
+% Switching from 9600 baudrate to the new one resulting in leastsignrand passing poker test
+% Also resulted in SerialException
+% How closely the algs miss the FIPS test
+% Bitrates in 9600 vs new one
+% Check other baudrates?
