@@ -51,7 +51,9 @@ class StatTests:
          
            For n=20000, we have 
               >>> e = lambda i, n: float(n-i+3)/2**(i+2); e(9, 20000)
-               9.7626953125      (approx 10)
+               9.7626953125      (approx 10, so k=10)
+             >>> e(10, 20000)
+               4.881103515625
 
            Returns a 3-tuple of
               - statistic X4 which follows X^2 with df=2k-2
@@ -60,18 +62,17 @@ class StatTests:
         
         k = 10 if k == 0 else k
 
-        # Uncommen to only count 1..k runs
-        #B = [0]*(k+1)
-        #G = B[:]
+        # Count 1..k runs
+        B = [0]*(k+1)
+        G = B[:]
 
         # Count all groups
         # Let c be the length of the longest group
-        c = max([len(''.join(a[1])) for a in groupby(self.s)])
-        B = [0]*(c+1)
-        G = B[:]
-
+        #c = max([len(''.join(a[1])) for a in groupby(self.s)])
+        #B = [0]*(c+1)
+        #G = B[:]
         # If so happens that c > k, we get IndexErrors below when we calculate X4
-        k = c if c > k else k
+        #k = c if c > k else k
         
         # Maður lifandi, þetta er sniðugt!
         for groupname, group in groupby(self.s):
