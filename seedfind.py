@@ -1,8 +1,8 @@
 #coding: utf-8
-'''Let C be the number of calls that a program has made to the
+'''Let k be the number of calls that a program has made to the
 avr-libc random() function (the Arduino is equipped with it). This
 program finds the seed value with reasonable guessing-time (runs in
-O(C)).
+O(k)).
 
 Since the analogRead() function is heavily biased, we use a sampling
 to create a probability distribution that we select from. The idea is
@@ -31,7 +31,7 @@ class Seedfinder:
         function oursevles.
 
         This function then runs in O(k) time, where k is the length
-        of the given sequence.''
+        of the given sequence.'''
 
         # Let's use lits
         #lastk = [deque()]*1024
@@ -64,6 +64,7 @@ class Seedfinder:
         '''Builds the probability distribution from n samples from
         source. If source is a FileSamples object, n is finite and we
         force it to be the number of lines in the file'''
+
         if type(source) == type(ArdFile):
             n = len(source) if len(source) > n else n  # Not possible on file objects
             
