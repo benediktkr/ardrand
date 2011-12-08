@@ -1,13 +1,12 @@
-'''The Wiring-functions random() and randomSeed(9 can be found in
-    /loka/arduino-0022/hardware/arduino/cores/arduino/WMath.cpp
+'''The Wiring-functions random() and randomSeed() can be found in
+    arduino-0022/hardware/arduino/cores/arduino/WMath.cpp
 but they turn out to be wrapper functions around the avr-libc functions
-random() and srandom().
+random() and srandom() from
+        libc/stdlib/random.c.
+        
+This program is implemented after that file in avr-libc-1.7.1.
 
-This program is implemented after the file
-    libc/stdlib/random.c
-from avr-libc-1.7.1.
-
-Written in a classless C-manner to be as like the or possible.'''
+Written in a classless C-manner to be as like the original possible.'''
 
 # python doesn't have constants, right?
 RANDOM_MAX = 0x7FFFFFFF
@@ -16,7 +15,7 @@ RANDOM_MAX = 0x7FFFFFFF
 next = [1L]
 
 def do_random(ctx):
-    '''(Commented lifted from random.c)
+    '''(Comment lifted from random.c)
     Compute x = (7^5 * x) mod (2^31 -1)
     without overflowing 31 bits:
          (2^31 - 1) = 12773 * (7^5) + 2836
