@@ -219,9 +219,24 @@ class Arduino(Serial):
     def onboardtlsr(self, n):
         '''Onboard Twoleastsign-RAND
         '''
-        for i in range(n):
+        for i in xrange(n):
             self.write("TLSR " + str(self.pin))
             yield self.read(1)
         
         
         
+class ArdFile(file):
+    '''Interface to be able to call .readint() on a file object'''
+    def __init__(self, fname='samples.txt', mode='r'):
+        file.__init__(self, fname, mode)
+        self.samples = self.read().split('\n')
+        self.i = 0
+        self.n = len(self.samples)
+
+    def __len__(self):
+        return self.n
+
+    def readint(self):
+        current = self.samples[self.i]
+        self.i += 1
+        return int(current)
