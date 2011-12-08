@@ -156,7 +156,22 @@
 %x\section{Lausn verkefnis og útfærsla}
 
 \begin{abstract}
-  How doez I maek abstract?
+
+  Cheap micro-controllers, such as the Arduino or other controllers
+  based on the Atmel AVR CPUs, are being deployed in a wide variety of
+  projects, ranging from sensors networks to robotic submarines. In
+  this paper, we investigate the feasibility of using the Arduino as a
+  true random number generator (TRNG). The Arduino Reference Manual
+  recommends using it to seed a pseudo random number generator (PRNG)
+  due to its ability to read random atmospheric noise from its
+  analogue pins. This is an enticing application since true true bits
+  of entropy are hard to come by. Unfortunately, we show with
+  statistical methods that the atmospheric noise of an Arduino is
+  largely predictable in a variety of settings, and is thus a weak
+  source of entropy. We explore various methods to extract true
+  randomness from the micro-controller and conclude that it should not
+  be used in good faith to produce randomness from its analogue pins.
+
 \end{abstract}
 
 \section{Introduction}
