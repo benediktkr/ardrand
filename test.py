@@ -1,14 +1,13 @@
 from stattests import StatTests, FipsTests
+from seedfind import Seedfinder
+from avrlibcrandom import random, srandom
 
-b = ''.join([a for a in "11100 01100 01000 10100 11101 11100 10010 01001" if a != ' ']*4)
+f = open('samples.txt').read().split('\n')
 
-st = StatTests(b)
-if len(st) is not 160:
-    print "bla"
+seed = int(f[40987])
 
-#print st.poker(3)
-
-
-t = '1110001100010001010011101111001001001001001'
-print st.runs(3)
+srandom(seed) 
+seq = [random() for _ in range(10)]
+s = Seedfinder()
+print s.findseed(seq), seed
 

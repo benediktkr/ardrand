@@ -1,5 +1,4 @@
-'''Class containing wrapper-esque methods for PRNGs to be tesed, with
-the same interace as the Arudino-algorithms.'''
+'''A class that provides the same interafaces to the PRNGs as the Arduino class'''
 
 import avrlibcrandom
 from os import urandom
@@ -22,7 +21,7 @@ class Prng:
     def avrrandom(self, n, seed=1):
         '''avr-libc PRNG
         According to http://arduino.cc/en/Reference/Long a long on
-        arduino (and therefor avr) is 4 bytes. Produces n//(8*4) bytes (~n
+        arduino (and therefore avr) is 4 bytes. Produces n//(8*4) bytes (~n
         bits) from the avr-libc prng
 
         NOTE: not very pythonic'''

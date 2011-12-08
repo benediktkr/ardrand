@@ -7,30 +7,7 @@ void setup() {
 }
 
 void loop() {
-
-    if (Serial.available > 0) {
-        
-        char *in = (char*)malloc(Serial.available() + 1);
-        int i, p;
-        for(i=0; i<Serial.available()-2; i++) {
-            // Read the bytes (should be 
-            // Is either:
-            //    POLL
-            //    TLSR
-            in[i] = (char)Serial.read();
-        }
-        
-        // Discard the whitespace and set null-byte
-        Serial.read();
-        in[4] = '\0';
-        
-        // Set pin-number. 
-        p = (int)Serial.read();
-        pin = p;
-    }
     poll();
-    
-    free(in);
 }
 
 void poll() {
