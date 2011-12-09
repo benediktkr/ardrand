@@ -62,22 +62,31 @@ class Seedfinder:
         # Happens if the seed is larger than 2**10-1 or we have a bad sequence. 
         return None
 
-    def findseed(self, sequence, m):
+    def findseed(self, sequence, m=1):
         '''Finds the seed given a sequcence that does not have to be
         complete from the seed.
-        m is how many iterations we want to spend on each que/possible seed'''
+        
+        m is how many extra iterations we want to spend on each
+        que/possible seed beyond the length k. Thus m is an estimation
+        of Cq'''
 
         k = len(sequence)
-        lastk = [deque([i]) for i in self.p]
+        lastk = [deque([]) for i in self.p]
 
-        # Expand all the deques by k-1 elements from the first element as seed
+        # Expand all the deques by k elements from p[i] for each i. 
         # 1024*k operations → O(k)
-        for que in lastk:
-            srandom(que[0])
-            for i in xrange(k-1):
-                que.append(random())
+        for i in self.p:
+            srandom(i)
+            #lastk[i] = deque([random() for _ in range(k)])
+            for _ in xrange(k):
+                lastk[i].append(random())
 
+            # If we recieved a sequence dervied directly from the seed
+            if list(lastk[i]) == sequence:
+                return i
+            
         while True:
+            # UPDATE THIS COMMENT
             # This has to be a little more sophisticated than a crude
             # bruteforce attack.
             # 
@@ -91,27 +100,30 @@ class Seedfinder:
             # we find the sequence, we stay inside the while loop. Let
             # C denote this value.
             #
-            # So the worst case is C*k*m*k = C*k²*m. That gives us a
+            # After i edited the for loops, fix this comment section
+            # So the worst case is (C/m)*k*m*k = C*k². That gives us a
             # running boundary of O(C*k^2) where C is
             # unknown. Techincally, it is a constant but the running
             # time of the program is highly dependent on it.
-            for i in range(k):
-                j = self.p[i]
-
+            #
+            
+            for i in self.p: # Adds O(1024) complexity, constant - no change. 
                 # And we do this m*k times - we "flush" through the que.
                 # We could just do this one time and move down the prob dist
                 # but if we have a good enough sample, this will save us time
-                # in practice. 
-                for x in range(m*k):
-                    srandom(lastk[j][k])
+                # in practice.
+                for _ in range(k+m):
+                    srandom(lastk[i][-1])
+                    
                     v = random()
-                    lastk[j].popleft()
-                    lastk[j].append(v)
-                    if list(lastk[j]) == sequence:
-                        return j
+                    lastk[i].popleft()
+                    lastk[i].append(v)
+                    if list(lastk[i]) == sequence:
+                        return i
             # If we haven't found anything yet, we stay in the while loop. This program
             # may never halt, if we are given a bad sequence (that originated from some
-            # other PRNG or perhaps not from a PRNG at all). 
+            # other PRNG or perhaps not from a PRNG at all).
+
 
     def _makefreq(self, source, n=20000):
         '''Builds the probability distribution from n samples from
@@ -122,7 +134,7 @@ class Seedfinder:
         g that represents how many different numbers were observed in the sample'''
 
         if type(source) == type(ArdFile):
-            n = len(source) if len(source) > n else n  # Not possible on file objects
+            n = max(len(source), n)  # Not possible on file objects
             
         freqs = defaultdict(int)
         for x in xrange(n):
@@ -143,5 +155,3 @@ class Seedfinder:
         # order (poppable) and then the rest of the values, the set d as a list
         return (list(d) + f, g)
         
-
- 
