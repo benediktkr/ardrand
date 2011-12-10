@@ -1,0 +1,172 @@
+[ ] Mean-RAND
+  [+] Run 0 :
+    [ ] Bitrate: 25.3239577703 bits/second
+    [ ] Time: 789.765967131 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.0338 n1 = 9987
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 4166.9504
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 6819.98105123 G = [5233, 1432, 274, 79, 35, 78] B = [5080, 1606, 271, 83, 48, 44]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 1 :
+    [ ] Bitrate: 25.3568472962 bits/second
+    [ ] Time: 788.741587877 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 1.2168 n1 = 10078
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 4552.3776
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 7414.67569625 G = [5363, 1445, 248, 64, 37, 65] B = [5216, 1549, 268, 91, 43, 55]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 2 :
+    [ ] Bitrate: 26.5428905836 bits/second
+    [ ] Time: 753.497436047 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.125 n1 = 10025
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 5510.1888
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 8689.38140867 G = [5610, 1395, 232, 53, 33, 66] B = [5459, 1549, 225, 72, 36, 49]
+    [ ] Long runs test
+        [+] Passed
+[ ] Twoleastsign-RAND
+  [+] Run 0 :
+    [ ] Bitrate: 184.369066703 bits/second
+    [ ] Time: 108.47806716 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 3.0258 n1 = 10123
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 24.7424
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 27.8086277493 G = [2631, 1269, 608, 302, 136, 146] B = [2527, 1280, 687, 296, 160, 142]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 1 :
+    [ ] Bitrate: 176.17503439 bits/second
+    [ ] Time: 113.523463011 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.6272 n1 = 9944
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 9.1968
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 14.5758198071 G = [2559, 1287, 612, 299, 160, 152] B = [2617, 1231, 605, 310, 162, 144]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 2 :
+    [ ] Bitrate: 155.474241987 bits/second
+    [ ] Time: 128.638671875 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.5 n1 = 10050
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 15.9232
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 15.8474292945 G = [2502, 1255, 632, 313, 154, 150] B = [2486, 1274, 621, 296, 168, 162]
+    [ ] Long runs test
+        [+] Passed
+[ ] Leastsig-RAND
+  [+] Run 0 :
+    [ ] Bitrate: 338.591856637 bits/second
+    [ ] Time: 59.0681660175 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.845 n1 = 10065
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 48.8768
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 74.3534495192 G = [2787, 1268, 641, 273, 134, 133] B = [2740, 1292, 613, 302, 153, 137]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 1 :
+    [ ] Bitrate: 280.407954108 bits/second
+    [ ] Time: 71.3246529102 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 0.605 n1 = 10055
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 21.6
+    [ ] Runs test
+        [+] Passed
+        [ ] X4 = 28.5089913084 G = [2620, 1295, 611, 324, 126, 143] B = [2634, 1248, 617, 328, 139, 153]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 2 :
+    [ ] Bitrate: 295.296583889 bits/second
+    [ ] Time: 67.7285180092 seconds
+    [ ] Monobit test
+        [+] Passed
+        [ ] X1 = 2.0 n1 = 9900
+    [ ] Poker test
+        [+] Passed
+        [ ] X3 = 33.312
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 61.968741717 G = [2681, 1288, 645, 305, 147, 139] B = [2733, 1259, 665, 300, 135, 113]
+    [ ] Long runs test
+        [+] Passed
+[ ] Vanilla
+  [+] Run 0 :
+    [ ] Bitrate: 27292.1321848 bits/second
+    [ ] Time: 0.732811927795 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 1830.125 n1 = 6975
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 4404.0576
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 3484.01945362 G = [1035, 1402, 1503, 468, 264, 227] B = [3617, 785, 318, 106, 38, 35]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 1 :
+    [ ] Bitrate: 20711.7583053 bits/second
+    [ ] Time: 0.965635061264 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 2049.2802 n1 = 6799
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 4418.3936
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 3700.98684444 G = [1202, 1443, 1338, 443, 159, 405] B = [3728, 849, 299, 98, 8, 7]
+    [ ] Long runs test
+        [+] Passed
+  [+] Run 2 :
+    [ ] Bitrate: 20251.2391156 bits/second
+    [ ] Time: 0.987593889236 seconds
+    [ ] Monobit test
+        [!] Failed
+        [ ] X1 = 1621.0818 n1 = 7153
+    [ ] Poker test
+        [!] Failed
+        [ ] X3 = 4468.032
+    [ ] Runs test
+        [!] Failed
+        [ ] X4 = 3772.30475493 G = [955, 663, 1456, 770, 294, 236] B = [2832, 908, 289, 176, 74, 94]
+    [ ] Long runs test
+        [+] Passed
