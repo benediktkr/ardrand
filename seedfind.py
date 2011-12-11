@@ -140,18 +140,12 @@ class Seedfinder:
         for x in xrange(n):
             freqs[source.readint()] += 1
 
-        # Let f be a list of keys (values read from arduino) sorted
-        # by their items (the frequency of a given key), in asc order (we
-        # want to pop the value with the highest avail freq form this list)
+        # {Value: count}
         f = sorted(freqs.keys(), key=freqs.__getitem__, reverse=False)
 
-        # Let d be the set difference between the set {0..1024} and f
-        d = set(range(1024)) - set(f)
+        d = set(range(1024)) - set(f) # Fill in unobserved values
 
-        # Let g be the number of distinct values observed in the sample
-        g = len(set(f))
+        g = len(set(f))               # N.o. observerd values
         
-        # And return a sorted list that first contains the values in probability
-        # order (poppable) and then the rest of the values, the set d as a list
         return (list(d) + f, g)
         

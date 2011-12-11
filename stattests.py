@@ -75,17 +75,22 @@ class StatTests:
         #k = c if c > k else k
         
         # Maður lifandi, þetta er sniðugt!
-        for groupname, group in groupby(self.s):
-            i = len(''.join(group))
-            #if i > k:
-            #    # NOTE: Not sure if the FIPS specifications expect this behaviour. 
-            #    continue
-            #elif groupname == '1':
+        # for groupname, group in groupby(self.s):
+        #     i = len(''.join(group))
+        #     if i >= k:
+        #         continue
+        #     #elif groupname == '1':
+        #     if groupname == '1':
+        #         B[i] += 1
+        #     else:
+        #         G[i] += 1
 
-            if groupname == '1':
-                B[i] += 1
-            else:
-                G[i] += 1
+        runs = [(groupname, len(''.join(group))) for groupname, group in groupby(self.s)]
+        for i in range(1, k):
+            # Hm. 
+            B[i] = len([a for a in runs if a[1] == i and a[0] == '1'])
+            G[i] = len([a for a in runs if a[1] == i and a[0] == '0'])
+        
 
         e = lambda i: float(self.n-i+3)/2**(i+2) # Returns a float
 

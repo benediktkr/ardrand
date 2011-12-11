@@ -6,15 +6,19 @@ from stattests import FipsTests
 from time import time
 from prng import Prng
 
-ard = Arduino(baudrate=9600, debug=False, dbglevel=1500)
+ard = Arduino(debug=False, dbglevel=1500)
 prng = Prng()
+
 allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
-#algs = [ard.leastsigrand, ard.vanilla, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [urandomtest, ard.vanilla, ard.leastsigrand]
 
 #algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.twoleastsignrand, ard.updownrand]
-algs = [ard.vanilla, prng.urandom]
+
+algs = [prng.urandom]
+
+#algs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.twoleastsignrand, ard.meanrand]
+
 
 k = 20000
 
