@@ -68,7 +68,7 @@ class Seedfinder:
         
         m is how many extra iterations we want to spend on each
         que/possible seed beyond the length k. Thus m is an estimation
-        of Cq'''
+        of C'''
 
         k = len(sequence)
         lastk = [deque([]) for i in self.p]
@@ -86,33 +86,30 @@ class Seedfinder:
                 return i
             
         while True:
-            # UPDATE THIS COMMENT
             # This has to be a little more sophisticated than a crude
             # bruteforce attack.
-            # 
-            # First try the first g values m*k times and as we move
-            # down the prob dist go on to the rest of the values.
             #
             # This program has the rather curious property that it has
             # an essentially unknown running boundary. It is
             # completely dependent upon the number of calls made to
             # the PRNG before the sequence given to us appeared (until
             # we find the sequence, we stay inside the while loop. Let
-            # C denote this value.
+            # C denote this value. Let m be our best estimation of C. 
+            #
+            # For every value i , we generate m+k values from i as a
+            # seed. Here i is an index in the probability distribution
+            # so we begin with the most likely values.
+            #
             #
             # After i edited the for loops, fix this comment section
-            # So the worst case is (C/m)*k*m*k = C*k². That gives us a
-            # running boundary of O(C*k^2) where C is
-            # unknown. Techincally, it is a constant but the running
-            # time of the program is highly dependent on it.
+            # So the worst case is 1024*C. That gives us a running
+            # boundary of O(C) where C is unknown. Techincally, it is
+            # a constant but the running time of the program is highly
+            # dependent on it.
             #
             
-            for i in self.p: # Adds O(1024) complexity, constant - no change. 
-                # And we do this m*k times - we "flush" through the que.
-                # We could just do this one time and move down the prob dist
-                # but if we have a good enough sample, this will save us time
-                # in practice.
-                for _ in range(k+m):
+            for i in self.p: 
+                for _ in range(m+k):
                     srandom(lastk[i][-1])
                     
                     v = random()
