@@ -15,6 +15,8 @@
 %\usepackage{courier}                      % Write in a monospace font
 %\usepackage{geometry}                      % Because 'fullpage' is outdated
 \usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{subfig}
 
 \newtheorem{mydef}{Definition}
 \newcommand{\Title}{The Arduino as a Hardware Random-Number Generator}
@@ -109,7 +111,7 @@
 {\begin{itemize}\item[]\lstinputlisting[caption=#2,label=#1]{#1}\end{itemize}}
   
 
-\setcounter{secnumdepth}{0}
+%\setcounter{secnumdepth}{0}
 \newcommand{\problem}[2]
 {
    \subsubsection*{\sc{#1}}
@@ -191,7 +193,7 @@ Since regular computers are unable to produce truly random numbers, psuedorandom
 
 Thus a PRNG can only be random if its seed is truly random and its output is only a function of the seed data, the actual entropy of the output can never exceed that of the seed. However, it can be computationally infeasible to distinguish between a good PRNG and a perfect RNG. A true random number generator (TRNG) uses a non-deterministic source to produce randomness (e.g. measuring chaotic systems in nature). 
 
-The Arduino is a free and open-source electronics sigle-board microcontroller with an Atmel AVR CPU. There are several different version of the board available\footnote{See: \url{http://arduino.cc/en/Main/Boards}}, but we used the Arduino Duemilanove\footnote{See: \url{http://arduino.cc/en/Main/ArduinoBoardDuemilanove} for full specifications} board (with the ATMega328\cite{atmegads} microcontroller) for this research. It has 6 analog inputs. 
+The Arduino is a free and open-source electronics sigle-board microcontroller with an Atmel AVR CPU. There are several different version of the board available\footnote{See: \url{http://arduino.cc/en/Main/Boards}}, but we used the Arduino Duemilanove\footnote{See: \url{http://arduino.cc/en/Main/ArduinoBoardDuemilanove} for full specifications} board (with the ATMega328\cite{atmegads} microcontroller) for this research. The Arduino toolkit has the \texttt{analogRead} function that reads from a given analog pin on the board and returns a 10-bit integer. This is what we tried to use in order to extract entropy. This function maps input voltages. 
 
 The Arduino Reference Manual suggests that reading from an unconnected analog pin gives a ``fairly random'' number\cite{ardref}, ideal for seeding the \texttt{avr-libc} PRNG\footnote{Archival of this claim: \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}}. We will later show that this is not true and, and that the reading from an unconnected pin is not very random at all. We will also show that building a RNG with the Arduino is infeasible and that if you follow the Arduino Reference Manual, the sheer lack of possible seeds makes it relatively easy for an adversary to guess the seed.
 
@@ -202,9 +204,9 @@ We also attempt to build a random bit generator from the Arduino (without adding
 The contributions of this work are the following:
 
 \begin{itemize}
-\item Implementations of the monobit, poker and runs statistical tests in the Python programming language as well as code that exposes and Arduino to these tests. 
-\item A program that given a sequence from the \texttt{avr-libc} PRNG seeded with a value from the \texttt{analogRead}-function on an Arduino, finds the seed value. It is done by first analyzing data from the Arduino and building a probability distribution of the values. The program either collects data directly from the Arduino first or can be supplied with a dataset. We supply a typical dataset with the code. This includes an implementation of the \texttt{avr-libc random} function.
-\item Rebuttal of the claim made by the Arduino manufactures that \texttt{analogRead} returns ``fairly random'' integers\cite{ardref}.
+\item Implementations of the monobit, poker and runs statistical tests in the Python programming language as well as code that exposes and Arduino to these tests. (Section ~\ref{sec:stattests}.)
+\item A program that given a sequence from the \texttt{avr-libc} PRNG seeded with a value from the \texttt{analogRead}-function on an Arduino, finds the seed value. It is done by first analyzing data from the Arduino and building a probability distribution of the values. The program either collects data directly from the Arduino first or can be supplied with a dataset. We supply a typical dataset with the code. This includes an implementation of the \texttt{avr-libc random} function. (Section ~\ref{sec:seedfind}.)
+\item Rebuttal of the claim made by the Arduino manufactures that \texttt{analogRead} returns ``fairly random'' integers\cite{ardref}. (Section ~\ref{sec:refuting}.)
 
 \end{itemize}
 
@@ -274,6 +276,7 @@ for all $i$, where $E_i$ denotes the expected number and $O_i$ denotes the obser
 The degrees of freedom is the number of values that are free to vary. It is worth noting that if we have $m$ different values in our calculations, we can often figure out the $m^{th}$ value from the $m-1$ other values, so then we would have $k=m-1$ degrees of freedom. This is often the case for our tests, such as the Monobit test. 
 
 \subsection{Statistical tests used}
+\label{sec:stattests}
 
  Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivations for this is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. 
 
@@ -332,7 +335,7 @@ We use the FIPS-140-1 bounds\cite{fips140} for the tests of our Arduino RBG. Let
 \begin{description}
 \item[Monobit test] The test is passed if $9.654 < X_1 < 10.346$ and the number $n_1$ of 1's should satisfy $9654 < n_1 < 10346$.
 \item[Poker test] The statistic $X_3$ is computed for $m=4$ and the test is passed if $1.03 < X_3 < 57.4$. 
-\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in ~\ref{tab:fipsbounds}. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. 
+\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in table ~\ref{tab:fipsbounds}. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. 
 
   \begin{table}[H]
     \begin{center}
@@ -364,6 +367,7 @@ Decorrelation is a term that refers to reducing autocorrelation (the similarity 
 Suppose that the probability that a RBG generates a 1 with a probability $p$ and a 0 with probability $1-p$, where $p$ is unknown but fixed. We group the output of the generator into pairs of two bits. The pairs 00 and 11 are discarded, and a 10-pair is transformed to a 1-bit while a 01-pair is transformed into a 0. This is the von Neumann-corrector\cite{menezes1996, intel} or -box. 
 
 \subsection{Algorithms used to try to extract entropy from the Arduino}
+\label{sec:algs}
 
 We implemented several algorithms in our search for entropy. These are descriptions of our algorithms. 
 
@@ -444,11 +448,98 @@ FIPS140-1 specifies that the sample must be 20 000 bits, or 2.5KB. But the Ardui
 
 \section{Experimental Results}
 
+We began by analyzing the output of the function \texttt{analogRead} on the Arduino in various different settings. We found that the output is highly dependent on several environmental factors, some of which are unknown to us. Reading from different pins gives different scopes of values, but the behavior is the same. We will show graphs of all pins on one Arduino in one setting to back this claim.
+
+
+\subsection{Settings and devices used in research}
+
+The output of the function \texttt{analogRead} on the Arduino is highly dependent on the environment in which it resides. For this research we mainly used three different locations, as described here. We used subjected the Arduino boards to different conditions in these settings, such as putting it in the freezer or on a hot heating element. 
+
+\begin{description}
+\item[Setting 0] The study of the author. An apartment built by the U.S. Navy with electricity converted to Icelandic and European standards. 
+\item[Setting 1] Garage furnished as a studio apartment in Kópavogur. 
+\item[Setting 2] Computer Science lab at Reykjavik University. 
+\end{description}
+
+For this research we used three distinct but identical Arduino Duemilanove boards with the ATMega 328 microcontroller. To distinguish between them, we call them ard1, ard2 and ard3. These names are also used to distinguish between them in our datasamples. 
+
+\subsection{Analysis of \texttt{analogRead}}
+
+Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that it plays some role and that where you place it definitely has effect on the output. It shows readings taken in various places in setting 0 --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
+
+What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear in all settings, e.g. not in setting 1 (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same device, these are purely environmental factors. It could possibly be linked to the curious property that one of the \texttt{RAND} algorithms will pass all statistical tests in that setting. 
+
+Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
+
+Note the somewhat regular patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. 
+
+\begin{figure}[h!]
+  \centering  
+  \includegraphics[width=0.7\columnwidth]{img/RoomTempOverlay.png}
+  
+  \caption{Readings from ard1 at Setting 0, in various places}
+  \label{fig:ard3space}
+\end{figure}
+
+
+\begin{figure}[h!]
+  \centering  
+  \subfloat[200 readings from ard1 in setting 0]{
+    \label{fig:ard1zoomroom}
+    \includegraphics[width=0.7\columnwidth]{img/Room_1500-1700_zoom.png}
+  }
+
+  \subfloat[1000 readings from ard3 in setting 0]{
+    \label{fig:ard3zoomroom}
+    \includegraphics[width=0.7\columnwidth]{img/RoomZoom_9des.png}
+  }
+
+  \caption{Limited ranges of readings from \texttt{analogRead}}
+  \label{fig:ardzoom}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage.png}
+  \caption{Readings from ard3 taken in setting 1}
+  \label{fig:gfgarageard3}
+\end{figure}
+
+
+\subsubsection{Effects of temperature}
+
+Temperature is a key environmental factor. We see a much broader range of values when operating in heat or cold. The figures ~\ref{fig:ard1heat}, \ref{fig:ard1freezer} and\ref{fig:ard1fridge} show the output from \texttt{analogRead} in various temperature conditions of the extreme kinds. Note that ~\ref{fig:ard1freezer} only has 10000 values, as opposed to the 50000 values in all the other figures. This is because the Arduino simply stops working after a few minutes at $-11^\circ$C. Arduino have not released any information regarding operating temperatures but according to AVR the operating temperatures for the ATMega 328 microcontroller is $-40^\circ$C to $85^\circ$C \cite{atmegads}. One of our Arduino boards (ard1) broke after spending 4 hours in the freezer at $-12^\circ$C, so we conclude that some other component(s) on the board survive less cold than the microcontroller itself. 
+
+
+
+\begin{figure}[H]
+  \centering  
+  \includegraphics[width=0.7\columnwidth]{img/Heating50k.png}
+  \caption{Readings on top of a hot heating element (approx. 40C) in setting 0}
+  \label{fig:ard1heat}
+\end{figure}
+
+\begin{figure}[H]
+  \centering  
+  \includegraphics[width=0.7\columnwidth]{img/Freezer10k.png}
+  \caption{Reading inside a freezer (approx. -11C) at setting 0}
+  \label{fig:ard1freezer}
+\end{figure}
+  
+\begin{figure}[H]
+  \centering  
+  \includegraphics[width=0.7\columnwidth]{img/Fridge50k.png}
+  \caption{Reading inside a fridge (approx. 1C) at setting 0}
+  \label{fig:ard1fridge}
+\end{figure}
+
 \section{Breaking the Arduino as a RNG}
 
 This section is twofold. We will both show that using the \texttt{analogRead} function to seed the \texttt{avr-libc} PRNG is a very bad idea and we also exhibit proof-of-concept code that finds such a seed value, given a sequence from the PRNG. 
 
-\subsection{The lack of randomness in \texttt{analogRead}}
+\subsection{Refuting the claims made by Arduino}
+\label{sec:refuting}
+
 
 The Arduino Reference Manual\cite{ardref} states the following in the section about the \texttt{randomSeed} function. This claim is at the time of writing found in the manual, and is available via The Internet Archive\footnote{http://www.archive.org} at \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}. The reference manual is only available online. 
 
@@ -460,14 +551,24 @@ After having visually examined the raw output with the graphs in the section abo
 
 The first issue with \texttt{analogRead} is that it only returns 10-bit integers, since it reads from the 10-bit analog-to-digital converter on the Arduino board\footnote{See \url{http://arduino.cc/en/Reference/AnalogRead}}. It then follows trivially that if you use \texttt{analogRead} to seed the PRNG, there are only $2^{10} = 1024$ seed values for an adversary to explore. 
 
-  \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=0.7\columnwidth]{img/gfgarage-ard3-pin3_5.png}
-    \caption{Readings from our Arduino no. 3 on pins 3 (green) and pin 5 (red)}
-    \label{fig:ard3gfgarage}
-  \end{figure}
+  \begin{figure}[h!]
+    \centering  
+    \subfloat[Sample from Ard3 taken in setting 0]{
+      \label{fig:ard3home}
+      \includegraphics[width=0.7\columnwidth]{img/home-ard3-pin5.png}
+    }
 
-As we can see from ~\ref{fig:ard3gfgarage} there are only roughly 100 values that show up. And using different pins give us different scopes of values. 
+    \subfloat[Sample from Ard3 taken in setting 1]{
+      \label{fig:ard3gfgaragepins}
+      \includegraphics[width=0.7\columnwidth]{img/gfgarage-ard3-pin3_5.png}
+    }
+
+    \caption{Readings from our Arduino no. 3 on pins 3 (green) and pin 5 (red). NOTE: home pin3, show same scales}
+    \label{fig:ard3}
+        
+  \end{figure}
+ 
+As we can see from Figure~\ref{fig:ard3} there are only roughly 100 values that show up, but it is worth noting that using different pins give us different scopes of values. 
 
 We exposed the output from \texttt{analogRead} to the same statistical tests as our \texttt{RAND} algorithms. In order to use the FIPS-bounds to measure against we needed 20 000 bits, or 2000 10-bit integers that we converted to binary. We state the null hypothesis
 
@@ -475,25 +576,101 @@ We exposed the output from \texttt{analogRead} to the same statistical tests as 
 H_0 = \text{The output from \texttt{analogRead} is "fairly random"}
 \]
 
-and show that the results are statistically significant and we can reject it as non-random. These are the average over three consequtive runs in the same setting\footnote{Study of the author}.
+and show that the results are statistically significant and we can reject it as non-random. These are the average over three consecutive runs in setting 0. 
 
   \begin{table}[H]
     \begin{center}
-      \begin{tabular}{| l | l |}
+      \begin{tabular}{| l | l | l | l |}
         \hline
-        Statistical test & $X$ statistic & Accepted & Bitrate \\
+        Statistical test & $X$ statistic & Accepted & Required $X$ interval \\
         \hline
         \hline
-        Monobit & 903.847 & Not accepted &  \\
+        \textbf{Monobit} & 903.847 & \textcolor{red}{\textbf{Rejected}} & $9.964 < X_1 < 10.346$  \\
+        \textbf{Poker} & 3211.45 & \textcolor{red}{\textbf{Rejected}} & $1.03 < X_3 < 57.4$ \\
+        \textbf{Runs} & 2812.81 & \textcolor{red}{\textbf{Rejected}} & Lengths of runs used \\
         \hline
       \end{tabular}
     \end{center}
-    \caption{Statistical test results applied to \texttt{analogRead} output}
+    \caption{Results of the statistical test applied to \texttt{analogRead} output}
     \label{tab:analogreadtests}
   \end{table}
 
+We see that all of the statistics are far off from the FIPS requirements so we can safely conclude that the null hypothesis $H_0$ is false and \texttt{analogRead} is not even ``fairly random''. 
+
+We note that the observed bitrate for reading values directly from \texttt{analogRead} is 17531 bps\footnote{Baudrate 115200 bps}. 
 
 \subsection{Finding the seed}
+\label{sec:seedfind}
+
+This limited range of possible values from \texttt{analogRead} cuts down on search time for the seed. As we have seen, there are only a few hundred values that show up most of the time, although these values may vary. We have designed proof-of-concept code\footnote{Implemented in the file \texttt{seedfind.py} in the Ardrand codebase} that given a sequence from the \texttt{avr-libc} (Arduino) PRNG, finds the seed --- given that is was chosen by use of \texttt{analogRead}. 
+
+The \texttt{avr-libc} PRNG is a Linear congruential generator defined by the recurrence relation\footnote{Resides in \texttt{libc/stdlib/random.c} in avr-libc-1.7.1 and a Python implementation is found at \texttt{avrlibcrandom.py} in the Ardrand codebase}
+
+\[
+X_{n+1} \equiv 7^5 \cdot X_n \pmod{2^{31} -1}.
+\]
+
+In order to account for the diversity in values that the Arduino outputs in various settings, our implementation inputs either a text file of samples or can connect to an Arduino board and collect fresh samples. To provide the same interface, this is implemented by means of inherited classes in the code. 
+
+Let $C$ denote the number of calls a program has made to the PRNG in order to generate a sequence $s$. Let $m$ be our best-guess or estimation of the unknown $C$. Our program inputs $s$ and $m$, as well as a sample source. It then builds a list of values in the range $[0, 1023]$, sorted by the frequency by which they appear in the given sample. Let $P$ denote this list of probability distributed values.
+
+We then create one deque for each of the $1024$ values in P. Let $k$ be the length of the sequence $s$. For all $i \in P$ we create a deque with $k$ pseudo random integers derived from $i$ as a seed. Then we iterate over $P$ and generate $k+m$ integers for each deque (holding $k$ values at a time) until we find the sequence. 
+
+Here is pseudo-code for our program. The functions \texttt{srandom} and \texttt{random} are the seeding function for the \texttt{avr-libc} PRNG and random function, respectively. 
+
+\begin{lstlisting}[caption=Finding the seed]
+def findseed(s, m, samplesource):
+  k = len(s)
+  lastk = [deque()]*1024
+
+  P = buildProbDist(samplesource)
+
+  # Expand all the deques by k elements from P[i] as seed
+  for i in P:
+    srandom(i)
+    lastk[i] = deque([random() for _ in range(k)])
+    # Did we receive a sequence derived directly from the seed?
+    if lastk[i] == s:
+      return i+
+
+  while True:
+    for i in P:
+      for _ in range(m+k):
+        srandom(lastk[i][-1])
+        v = random()
+        lastk[i].popfront()
+        lastk[i].append(v)
+        if lastk[i] == s:
+          return i
+\end{lstlisting}
+
+This program has running bounds given by $\mathcal{O}(C)$, since it has a endless \texttt{while}-loop, its running time is not bounded by the $\mathcal{O}(m+k)$ loop, that is only an estimation or best-guess of how long it takes to find the correct seed. 
+
+\subsubsection{Possible optimizations}
+
+While this program runs reasonably fast in practice, one can think of optimizations of the code. Let $G$ a sorted list of observed values in the sample source. Then one variation of the \texttt{findseed} program might generate sequences from each value $g \in G$ as seed for some constant time $t$ before moving on to the unlikelier values that are in $P-G$, the unobserved values. Thus we would spend $t$ times more time on the likelier values. The while loop of this variation would look like
+
+\begin{lstlisting}[caption=One possible optimization of the \texttt{findseed} program]
+...
+  while True:
+    for i in G:
+      for _ in range(t*(m+k)):
+        expand(lastk[i])
+        if lastk[i] == s:
+          return i
+    for i in P-G:
+      for _ i range(m+k):
+        expand(lastk[i])
+         if lastk[i] == s:
+           return i
+
+def expand(que):
+  srandom(que[-1])
+  v = random()
+  que.popfront()
+  lastk[i].append(v)
+\end{lstlisting}
+
 
 \section{Conclusions}
 

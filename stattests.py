@@ -119,6 +119,7 @@ class FipsTests():
 
     def monobit(self):
         X1, n1 = self.st.monobit()
+        # 9.654 < X1 < 10.346
         if (9654 < n1) and (n1 < 10346):
             return (True, X1, n1)
         return (False, X1, n1)
