@@ -17,11 +17,12 @@
 \usepackage{hyperref}
 \usepackage[usenames,dvipsnames]{color}
 \usepackage{subfig}
+\usepackage{placeins}
 
 \newtheorem{mydef}{Definition}
 \newcommand{\Title}{The Arduino as a Hardware Random-Number Generator}
 \newcommand{\SubTitle}{Final Report}
-\newcommand{\DueDate}{\today} % Or \today
+\newcommand{\DueDate}{December, 2011} % Or \today
 \newcommand{\Class}{Ardrand}
 \newcommand{\AuthorClearSpace}{3in}    % How far below the title the author name shoudl appear
 \newcommand{\ClassInstructor}{Ýmir Vigfússon}
@@ -465,13 +466,8 @@ For this research we used three distinct but identical Arduino Duemilanove board
 
 \subsection{Analysis of \texttt{analogRead}}
 
+
 Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that it plays some role and that where you place it definitely has effect on the output. It shows readings taken in various places in setting 0 --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
-
-What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear in all settings, e.g. not in setting 1 (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same device, these are purely environmental factors. It could possibly be linked to the curious property that one of the \texttt{RAND} algorithms will pass all statistical tests in that setting. 
-
-Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
-
-Note the somewhat regular patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. 
 
 \begin{figure}[h!]
   \centering  
@@ -481,6 +477,17 @@ Note the somewhat regular patterns in e.g. figures ~\ref{fig:ard1freezer} and \r
   \label{fig:ard3space}
 \end{figure}
 
+What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear in all settings, e.g. not in setting 1 (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same device, these are purely environmental factors. It could possibly be linked to the curious property that one of the \texttt{RAND} algorithms will pass all statistical tests in that setting. 
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage.png}
+  \caption{Readings from ard3 taken in setting 1}
+  \label{fig:gfgarageard3}
+\end{figure}
+
+
+Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
 
 \begin{figure}[h!]
   \centering  
@@ -498,12 +505,8 @@ Note the somewhat regular patterns in e.g. figures ~\ref{fig:ard1freezer} and \r
   \label{fig:ardzoom}
 \end{figure}
 
-\begin{figure}[h!]
-  \centering
-  \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage.png}
-  \caption{Readings from ard3 taken in setting 1}
-  \label{fig:gfgarageard3}
-\end{figure}
+
+Note the interference patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. Although we are not sure what causes these patters, electrical fluctuations seem like a worthy candidate. These patterns might also be a product of the analogue pins themselves, or their manufacturing process. 
 
 
 \subsubsection{Effects of temperature}
@@ -514,24 +517,59 @@ Temperature is a key environmental factor. We see a much broader range of values
 
 \begin{figure}[H]
   \centering  
-  \includegraphics[width=0.7\columnwidth]{img/Heating50k.png}
+  \includegraphics[width=0.5\columnwidth]{img/Heating50k.png}
   \caption{Readings on top of a hot heating element (approx. 40C) in setting 0}
   \label{fig:ard1heat}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h!]
   \centering  
-  \includegraphics[width=0.7\columnwidth]{img/Freezer10k.png}
+  \includegraphics[width=0.5\columnwidth]{img/Freezer10k.png}
   \caption{Reading inside a freezer (approx. -11C) at setting 0}
   \label{fig:ard1freezer}
 \end{figure}
   
-\begin{figure}[H]
+\begin{figure}[h!]
   \centering  
-  \includegraphics[width=0.7\columnwidth]{img/Fridge50k.png}
+  \includegraphics[width=0.5\columnwidth]{img/Fridge50k.png}
   \caption{Reading inside a fridge (approx. 1C) at setting 0}
   \label{fig:ard1fridge}
 \end{figure}
+
+\subsection{Harvesting entropy and statistical testing}
+
+We subject the output of the \texttt{RAND} algorithms described in section ~\ref{sec:algs} to the statistical tests described in section ~\ref{sec:stattests}. These are our results in the three different settings used in our experiments. 
+
+We used a baudrate of 115200 bps (highest available for the Arduino over the FTDI RS232-to-USB connection) for these experiments for maximum bandwidth. The maximum reading rate of \texttt{analogRead} is about 10000 times per second\cite{ardref}. When we read\footnote{Done with \texttt{poll.py} in the Ardrand codebase} iteratively from \texttt{analogRead} over USB,  \texttt{pyserial} will raise either an \texttt{OSError} or \texttt{SerialException}. This happens approximately once every 500 times and reading the \texttt{pyserial} source code\footnote{See \url{http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm}} we find a comment stating that ``disconnected devices, at least on Linux, show the behavior that they are always ready to read immediately but reading returns nothing''. We therefore conclude that these exceptions are the result of \texttt{analogRead} blocking for moment. 
+
+These are the results of our \texttt{RAND} algorithms in all three settings, subjected to the FIPS boundaries. Each bitsequence tested is 20000 bits long and each recorded result is the average of three consecutive runs. 
+
+\subsubsection{Results in setting 0}
+
+  \begin{table}[H]
+    \begin{center}
+      \begin{tabular}{| l | l | l | l |}
+        \hline
+        Statistical test & Result & Accepted? & Bandwidth\\
+        \hline
+        \hline
+        \textbf{Monobit} & $X_1 = 903.847$ & \textcolor{red}{\textbf{Rejected}} & $9.964 < X_1 < 10.346$  \\
+        \textbf{Poker} & $X_3 = 3211.45$ & \textcolor{red}{\textbf{Rejected}} & $1.03 < X_3 < 57.4$ \\
+        \textbf{Runs} & $X_4 = 2812.81$ & \textcolor{red}{\textbf{Rejected}} & Lengths of runs used \\
+        \textbf{Long runs} & & \textcolor{green}{\textbf{Accepted}} & No run longer than 34 \\
+        \hline
+      \end{tabular}
+    \end{center}
+    \caption{\texttt{Leastsign-RAND} in setting 0}
+    \label{tab:leastsign0}
+  \end{table}
+
+
+
+\subsubsection{Results in setting 1}
+
+\subsubsection{Results in setting 2}
+
 
 \section{Breaking the Arduino as a RNG}
 
@@ -541,7 +579,7 @@ This section is twofold. We will both show that using the \texttt{analogRead} fu
 \label{sec:refuting}
 
 
-The Arduino Reference Manual\cite{ardref} states the following in the section about the \texttt{randomSeed} function. This claim is at the time of writing found in the manual, and is available via The Internet Archive\footnote{http://www.archive.org} at \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}. The reference manual is only available online. 
+The Arduino Reference Manual\cite{ardref} states the following in the section about the \texttt{randomSeed} function. This claim is at the time of writing found in the manual, and is available via The Internet Archive\footnote{\url{http://www.archive.org}} at \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}. The reference manual is only available online. 
 
 \begin{quote}
 ``If it is important for a sequence of values generated by random() to differ, on subsequent executions of a sketch, use randomSeed() to initialize the random number generator with a fairly random input, such as analogRead() on an unconnected pin.''
