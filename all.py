@@ -5,8 +5,15 @@ from arduino import Arduino
 from stattests import FipsTests
 from time import time
 from prng import Prng
+from sys import argv, exit
 
-ard = Arduino(debug=False, dbglevel=1500)
+if len(argv) < 2:
+    print "python all.py port"
+    exit(1)
+
+port = argv[1]
+
+ard = Arduino(port="/dev/ttyUSB" + port, debug=False, dbglevel=1500)
 prng = Prng()
 
 allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
@@ -15,7 +22,7 @@ allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updown
 #algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.twoleastsignrand, ard.updownrand]
 
-algs = [prng.urandom]
+algs = [ard.leastsigrand]
 
 #algs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.twoleastsignrand, ard.meanrand]
 
@@ -24,7 +31,7 @@ k = 20000
 
 for alg in algs:
     print "[ ]", alg.__doc__.split('\n')[0]
-    Xmeanl = []
+    means = [[]]*3
     for i in range(3):
         print "  [+] Run", i, ":"
         # Generate the bitstring
@@ -39,6 +46,8 @@ for alg in algs:
         poker, X3 = fips.poker()
         runs, X4, G, B = fips.runs()
         longruns = fips.longruns()
+
+        means[i] = [X1, X3, X4, k/(end-start)]
         
         #Xmeanl.append((X1, X3, X4))
         print "    [ ] Monobit test"
@@ -56,6 +65,8 @@ for alg in algs:
         print "    [ ] Long runs test"
         print "        [+] Passed" if longruns else "        [!] Failed"
 
-    #print "  [+] Mean over the X statistics:", sum(Xmeanl, 0.0)/len(Xmeanl)
+
+
+
     
         
