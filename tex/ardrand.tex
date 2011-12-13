@@ -279,7 +279,7 @@ The degrees of freedom is the number of values that are free to vary. It is wort
 \subsection{Statistical tests used}
 \label{sec:stattests}
 
- Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivations for this is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. 
+ Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivations for this is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. There are several others tests available and NIST has published paper\cite{nist} that outlines a few tests such as the \texttt{DIEHARD}\footnote{See \url{http://stat.fsu.edu/~geo/diehard.html}} test suite, the tests outlined by Donald Knuth in The Art of Computer Programming and the Universal Statistical Test by Mauer\cite{mauer}
 
 Let $s = s_0, s_1, \ldots, s_{n-1}$ be a binary sequence of length $n$. A single bitstring of length $n = 20000$ from our generator is subjected to each of these tests. If any one of the tests fail, we conclude that the output of our generator is non-random. 
 
@@ -334,9 +334,9 @@ which approximately follows a $\chi^2$ distribution with 2k-2 degrees of freedom
 We use the FIPS-140-1 bounds\cite{fips140} for the tests of our Arduino RBG. Let $s$ be a bit sequence of length 20 000. The documents states explicit bounds as follows:
 
 \begin{description}
-\item[Monobit test] The test is passed if $9.654 < X_1 < 10.346$ and the number $n_1$ of 1's should satisfy $9654 < n_1 < 10346$.
-\item[Poker test] The statistic $X_3$ is computed for $m=4$ and the test is passed if $1.03 < X_3 < 57.4$. 
-\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in table ~\ref{tab:fipsbounds}. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. 
+\item[Monobit test] The test is passed if $9.654 < X_1 < 10.346$ and the number $n_1$ of 1's should satisfy $9654 < n_1 < 10346$. Should follow a $\chi^2$ with 1 degree of freedom. 
+\item[Poker test] The statistic $X_3$ is computed for $m=4$ and the test is passed if $1.03 < X_3 < 57.4$. Should follow a $\chi^2$ with 15 df. 
+\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in table ~\ref{tab:fipsbounds}. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. Should follow a $\chi^2$ with 16 df. 
 
   \begin{table}[H]
     \begin{center}
@@ -449,40 +449,64 @@ FIPS140-1 specifies that the sample must be 20 000 bits, or 2.5KB. But the Ardui
 
 \section{Experimental Results}
 
-We began by analyzing the output of the function \texttt{analogRead} on the Arduino in various different settings. We found that the output is highly dependent on several environmental factors, some of which are unknown to us. Reading from different pins gives different scopes of values, but the behavior is the same. We will show graphs of all pins on one Arduino in one setting to back this claim.
+We began by analyzing the output of the function \texttt{analogRead} on the Arduino in various different settings. We found that the output is dependent on several environmental factors, some of which are unknown to us. Reading from different pins gives different scopes of values, but the behavior is the same. We will show graphs of all pins on one Arduino connected to two computers to back this claim, see Figure ~\ref{fig:allpins}. What computer the Arduino is connected to matters. On one computer tested, one of our algorithms produces sequences that are not rejected. 
+
+  \begin{figure}[h!]
+    \centering  
+    \subfloat[Sample from Ard3 taken on the desktop computer]{
+      \label{fig:allpinsdesktop}
+      \includegraphics[width=0.55\columnwidth]{img/allpinsdesktop.png}
+    }
+    \subfloat[Sample from Ard3 taken on the D620]{
+      \label{fig:allpinsd620}
+      \includegraphics[width=0.55\columnwidth]{img/allpinsd620.png}
+    }
+
+    \caption{Readings from Ard2 taken over all pins on both the desktop and D620 laptop}
+    \label{fig:allpins}
+        
+  \end{figure}
 
 
-\subsection{Settings and devices used in research}
+\subsection{Computers and devices used in research}
 
-The output of the function \texttt{analogRead} on the Arduino is highly dependent on the environment in which it resides. For this research we mainly used three different locations, as described here. We used subjected the Arduino boards to different conditions in these settings, such as putting it in the freezer or on a hot heating element. 
+The output of the function \texttt{analogRead} on the Arduino is somewhat dependent on the environment in which it resides. We subjected the Arduino boards to different conditions, such as putting it in the freezer or on top of a hot heating element. 
 
-\begin{description}
-\item[Setting 0] The study of the author. An apartment built by the U.S. Navy with electricity converted to Icelandic and European standards. 
-\item[Setting 1] Garage furnished as a studio apartment in Kópavogur. 
-\item[Setting 2] Computer Science lab at Reykjavik University. 
-\end{description}
+These are descriptions of the computers used for the experiments. 
 
-For this research we used three distinct but identical Arduino Duemilanove boards with the ATMega 328 microcontroller. To distinguish between them, we call them ard1, ard2 and ard3. These names are also used to distinguish between them in our datasamples. 
+% \begin{description}
+% \item[Setting 0] The study of the author. An apartment built by the U.S. Navy with electricity converted to Icelandic and European standards. 
+% \item[Setting 1] Garage furnished as a studio apartment in Kópavogur. 
+% \item[Setting 2] Computer Science lab at Reykjavik University. 
+% \end{description}
+
+\begin{itemize}
+\item A no-name desktop computer with a Gigabyte GA-MA69GM-S2H motherboard. Running Debian GNU/Linux testing/wheezer.
+\item A Dell D505 laptop running Ubuntu GNU/Linux Maverick Meekat 11.04.
+\item A Dell D620 laptop running Ubuntu GNU/Linux Maverick Meekat 11.04 as well. 
+\end{itemize}
+
+The D505 laptop and the Desktop computer show the exact same behavior and are thus interchangeable, of our computers --- only the D620 differs. For this research we used three distinct but identical Arduino Duemilanove boards with the ATMega 328 microcontroller. To distinguish between them, we call them ard1, ard2 and ard3. These names are also used to distinguish between them in our datasamples. 
 
 \subsection{Analysis of \texttt{analogRead}}
 
 
-Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that it plays some role and that where you place it definitely has effect on the output. It shows readings taken in various places in setting 0 --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
+Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that it plays some role and that where you place it definitely has effect on the output. It shows readings taken in various different places\footnote{In the study of the author} --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
 
 \begin{figure}[h!]
   \centering  
   \includegraphics[width=0.7\columnwidth]{img/RoomTempOverlay.png}
   
-  \caption{Readings from ard1 at Setting 0, in various places}
+  \caption{Readings from ard1 connected to the desktop, in various places}
   \label{fig:ard3space}
 \end{figure}
 
-What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear in all settings, e.g. not in setting 1 (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same device, these are purely environmental factors. It could possibly be linked to the curious property that one of the \texttt{RAND} algorithms will pass all statistical tests in that setting. 
+What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear when connected to all computers, e.g. specifically when connected to the D620 laptop (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same Arduino device, in the same setting. The only factor is the computer used. When connected to the D620, one algorithm is not rejected by any of our tets. 
 
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage.png}
-  \caption{Readings from ard3 taken in setting 1}
+  \caption{Readings from ard3 connected to the D620 laptop}
   \label{fig:gfgarageard3}
 \end{figure}
 
@@ -490,26 +514,32 @@ What is more, by looking at the graph it becomes evident that there is not much 
 Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
 
 \begin{figure}[h!]
-  \centering  
-  \subfloat[200 readings from ard1 in setting 0]{
-    \label{fig:ard1zoomroom}
-    \includegraphics[width=0.7\columnwidth]{img/Room_1500-1700_zoom.png}
-  }
+  % \centering  
+  % \subfloat[200 readings from ard1 connected to the desktop computer]{
+  %   \label{fig:ard1zoomroom}
+  %   \includegraphics[width=0.7\columnwidth]{img/Room_1500-1700_zoom.png}
+  % }
 
-  \subfloat[1000 readings from ard3 in setting 0]{
-    \label{fig:ard3zoomroom}
-    \includegraphics[width=0.7\columnwidth]{img/RoomZoom_9des.png}
-  }
+  % \subfloat[1000 readings from ard3 connected to the D620 laptop]{
+  %   \label{fig:ard3zoomroom}
+  %   \includegraphics[width=0.7\columnwidth]{img/RoomZoom_9des.png}
+  % }
 
-  \caption{Limited ranges of readings from \texttt{analogRead}}
+  % \caption{Limited ranges of readings from \texttt{analogRead}}
+  % \label{fig:ardzoom}
+  \centering
+  \includegraphics[width=0.7\columnwidth]{img/Room_1500-1700_zoom.png}
+  \caption{200 readings from ard1 connected to the desktop computer}
   \label{fig:ardzoom}
+
 \end{figure}
 
 
-Note the interference patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. Although we are not sure what causes these patters, electrical fluctuations seem like a worthy candidate. These patterns might also be a product of the analogue pins themselves, or their manufacturing process. 
+Note the interference patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. Although we are not sure what causes these patters, electrical fluctuations seem like a worthy candidate. These patterns might also be a product of the analogue pins themselves, or their manufacturing process. This is beyond the scope of this paper. 
 
 
 \subsubsection{Effects of temperature}
+\FloatBarrier
 
 Temperature is a key environmental factor. We see a much broader range of values when operating in heat or cold. The figures ~\ref{fig:ard1heat}, \ref{fig:ard1freezer} and\ref{fig:ard1fridge} show the output from \texttt{analogRead} in various temperature conditions of the extreme kinds. Note that ~\ref{fig:ard1freezer} only has 10000 values, as opposed to the 50000 values in all the other figures. This is because the Arduino simply stops working after a few minutes at $-11^\circ$C. Arduino have not released any information regarding operating temperatures but according to AVR the operating temperatures for the ATMega 328 microcontroller is $-40^\circ$C to $85^\circ$C \cite{atmegads}. One of our Arduino boards (ard1) broke after spending 4 hours in the freezer at $-12^\circ$C, so we conclude that some other component(s) on the board survive less cold than the microcontroller itself. 
 
@@ -518,57 +548,133 @@ Temperature is a key environmental factor. We see a much broader range of values
 \begin{figure}[H]
   \centering  
   \includegraphics[width=0.5\columnwidth]{img/Heating50k.png}
-  \caption{Readings on top of a hot heating element (approx. 40C) in setting 0}
+  \caption{Readings on top of a hot heating element (approx. 40C) connected to the Dell D505}
   \label{fig:ard1heat}
 \end{figure}
 
 \begin{figure}[h!]
   \centering  
   \includegraphics[width=0.5\columnwidth]{img/Freezer10k.png}
-  \caption{Reading inside a freezer (approx. -11C) at setting 0}
+  \caption{Reading inside a freezer (approx. -11C) at setting connected to the Dell D620}
   \label{fig:ard1freezer}
 \end{figure}
   
 \begin{figure}[h!]
   \centering  
   \includegraphics[width=0.5\columnwidth]{img/Fridge50k.png}
-  \caption{Reading inside a fridge (approx. 1C) at setting 0}
+  \caption{Reading inside a fridge (approx. 1C) at setting connected to the Dell D505}
   \label{fig:ard1fridge}
 \end{figure}
 
+ 
+
+
+\FloatBarrier
 \subsection{Harvesting entropy and statistical testing}
 
-We subject the output of the \texttt{RAND} algorithms described in section ~\ref{sec:algs} to the statistical tests described in section ~\ref{sec:stattests}. These are our results in the three different settings used in our experiments. 
+We subject the output of the \texttt{RAND} algorithms described in section ~\ref{sec:algs} to the statistical tests described in section ~\ref{sec:stattests}. These are our results using the three different computers used in our experiments. 
 
-We used a baudrate of 115200 bps (highest available for the Arduino over the FTDI RS232-to-USB connection) for these experiments for maximum bandwidth. The maximum reading rate of \texttt{analogRead} is about 10000 times per second\cite{ardref}. When we read\footnote{Done with \texttt{poll.py} in the Ardrand codebase} iteratively from \texttt{analogRead} over USB,  \texttt{pyserial} will raise either an \texttt{OSError} or \texttt{SerialException}. This happens approximately once every 500 times and reading the \texttt{pyserial} source code\footnote{See \url{http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm}} we find a comment stating that ``disconnected devices, at least on Linux, show the behavior that they are always ready to read immediately but reading returns nothing''. We therefore conclude that these exceptions are the result of \texttt{analogRead} blocking for moment. 
+We used a baudrate of 115200 bps (highest available for the Arduino over the FTDI RS232-to-USB connection) in these experiments for maximum bandwidth. The maximum reading rate of \texttt{analogRead} is about 10000 times per second\cite{ardref}. When we read\footnote{See \texttt{poll.py} in the Ardrand codebase} iteratively from \texttt{analogRead} over USB,  \texttt{pyserial} will raise either an \texttt{OSError} or \texttt{SerialException}. This happens approximately once every 500 times and reading the \texttt{pyserial} source code\footnote{See \url{http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm}} we find a comment stating that ``disconnected devices, at least on Linux, show the behavior that they are always ready to read immediately but reading returns nothing''. We therefore conclude that these exceptions are the result of \texttt{analogRead} blocking for moment. 
 
-These are the results of our \texttt{RAND} algorithms in all three settings, subjected to the FIPS boundaries. Each bitsequence tested is 20000 bits long and each recorded result is the average of three consecutive runs. 
+These are the results of our \texttt{RAND} algorithms using all three computers, subjected to the FIPS boundaries. Each bitsequence tested is 20000 bits long and each recorded result is the average of three consecutive runs. Green means Accepted and red Rejected. 
 
-\subsubsection{Results in setting 0}
+\subsubsection{Results with Desktop computer}
 
   \begin{table}[H]
     \begin{center}
-      \begin{tabular}{| l | l | l | l |}
+      \begin{tabular}{| l | p{1.8cm} | p{2.1cm} | l | l | l |}
         \hline
-        Statistical test & Result & Accepted? & Bandwidth\\
+        Algorithm  & Monobit & Poker & Runs & Long runs & Bandwidth\\
         \hline
         \hline
-        \textbf{Monobit} & $X_1 = 903.847$ & \textcolor{red}{\textbf{Rejected}} & $9.964 < X_1 < 10.346$  \\
-        \textbf{Poker} & $X_3 = 3211.45$ & \textcolor{red}{\textbf{Rejected}} & $1.03 < X_3 < 57.4$ \\
-        \textbf{Runs} & $X_4 = 2812.81$ & \textcolor{red}{\textbf{Rejected}} & Lengths of runs used \\
-        \textbf{Long runs} & & \textcolor{green}{\textbf{Accepted}} & No run longer than 34 \\
+        \texttt{Leastsign} & \textcolor{green}{$n_1 = 9947$}
+        & \textcolor{red}{$X_3 = 869.44$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 290.55 bps \\
+
+        \texttt{Twoleastsign} & \textcolor{green}{$n_1 = 10027$}
+        & \textcolor{red}{$X_3 = 1290.05$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 133.6 bps \\
+
+        \texttt{Mean} & \textcolor{green}{$n_1 = 9979$}
+        & \textcolor{red}{$X_3 = 149.87$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 85.34 bps \\
+
+        \texttt{Updown} & \textcolor{red}{$n_1 = 8352$}
+        & \textcolor{red}{$X_3 = 1959.2$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 3.87 bps \\
+
         \hline
       \end{tabular}
     \end{center}
-    \caption{\texttt{Leastsign-RAND} in setting 0}
-    \label{tab:leastsign0}
+    \label{tab:res0}
+    \caption{Statistical tests on desktop}
   \end{table}
 
 
 
-\subsubsection{Results in setting 1}
+\subsubsection{Results with the D620 laptop}
 
-\subsubsection{Results in setting 2}
+  \begin{table}[H]
+    \begin{center}
+      \begin{tabular}{| l | p{1.8cm} | p{2.2cm} | l | l | l |}
+        \hline
+        Algorithm & Monobit & Poker & Runs & Long runs & Bandwidth\\
+        \hline
+        \hline
+        \texttt{Leastsign} & \textcolor{green}{$n_1 = 10 006$}
+        & \textcolor{green}{$X_3 = 34.59$}
+        & \textcolor{yellow}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 290.55 bps \\
+
+        \texttt{Twoleastsign} & \textcolor{green}{$n_1 = 10027$}
+        & \textcolor{green}{$X_3 = 10036$}
+        & \textcolor{green}{\textbf{Accepted}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 172.0 bps \\
+
+        \texttt{Mean} & \textcolor{green}{$n_1 = 10030$}
+        & \textcolor{red}{$X_3 = 4743,17$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 25.32 bps \\
+
+        \hline
+      \end{tabular}
+    \end{center}
+    \label{tab:res1}
+    \caption{Statistical test on D620 laptop}
+  \end{table}
+
+We can see that the \texttt{Twoleastsign-RAND} algorithm here produces sequences that are not rejected as being non-random. The \texttt{Leastsign-RAND} algorithm is a little less consistent since it is rejected by the tuns tests some of the time.
+
+ As we can see in Figure ~\ref{fig:gfgarageard3} and ~\ref{fig:allpinsd620}, \texttt{analogRead} is producing different patterns (and no drop) on this computer, compared to our other computers. Note the drop on pin 3 in the beginning. Curiously, the \texttt{Twoleastsign-RAND} algorithm will fail we choose pin 3. There is no guarantee that these sequences are truly random, they have just not been rejected as non-random. This shows that using some computers, the Arduino could possibly work as a RBG. But for it to be a RBG, it has to work using all PC hardware, in all settings. 
+
+\subsubsection{Results with the D505 laptop}
+
+ \begin{table}[H]
+    \begin{center}
+      \begin{tabular}{| l | p{1.8cm} | p{2.2cm} | l | l | l |}
+        \hline
+        Algorithm & Monobit & Poker & Runs & Long runs & Bandwidth\\
+        \hline
+        \hline
+
+
+        \hline
+      \end{tabular}
+    \end{center}
+    \label{tab:res1}
+    \caption{Statistical with the D505 laptop}
+  \end{table}
 
 
 \section{Breaking the Arduino as a RNG}
@@ -589,24 +695,7 @@ After having visually examined the raw output with the graphs in the section abo
 
 The first issue with \texttt{analogRead} is that it only returns 10-bit integers, since it reads from the 10-bit analog-to-digital converter on the Arduino board\footnote{See \url{http://arduino.cc/en/Reference/AnalogRead}}. It then follows trivially that if you use \texttt{analogRead} to seed the PRNG, there are only $2^{10} = 1024$ seed values for an adversary to explore. 
 
-  \begin{figure}[h!]
-    \centering  
-    \subfloat[Sample from Ard3 taken in setting 0]{
-      \label{fig:ard3home}
-      \includegraphics[width=0.7\columnwidth]{img/home-ard3-pin5.png}
-    }
-
-    \subfloat[Sample from Ard3 taken in setting 1]{
-      \label{fig:ard3gfgaragepins}
-      \includegraphics[width=0.7\columnwidth]{img/gfgarage-ard3-pin3_5.png}
-    }
-
-    \caption{Readings from our Arduino no. 3 on pins 3 (green) and pin 5 (red). NOTE: home pin3, show same scales}
-    \label{fig:ard3}
-        
-  \end{figure}
- 
-As we can see from Figure~\ref{fig:ard3} there are only roughly 100 values that show up, but it is worth noting that using different pins give us different scopes of values. 
+As we can see from Figure~\ref{fig:allpins} there are only roughly 100-400 values that show up, but it is worth noting that using different pins give us different scopes of values. Note the drop when using the desktop but not the D620 laptop. 
 
 We exposed the output from \texttt{analogRead} to the same statistical tests as our \texttt{RAND} algorithms. In order to use the FIPS-bounds to measure against we needed 20 000 bits, or 2000 10-bit integers that we converted to binary. We state the null hypothesis
 
@@ -711,6 +800,11 @@ def expand(que):
 
 
 \section{Conclusions}
+
+The primary goal of this project was to investigate the feasibility of using vanilla Arduino Duemilanove boards without add-on hardware as cheap RBG devices, in hopes of building a true hardware random number generator. Early on, we realized that there simply wasn't enough entropy available to build a RBG. Most to our surprise, we found that using one of our computers, it seems to work as a RBG, or at least it was not rejected by our implemented statistical tests, that had rejected everything else. Due to the very nature of randomness, we cannot say for sure that it is indeed producing random bits --- we can only note that it was not rejected as non-random. But since this is only the case using specific hardware, we must reject the Arduino as a RBG since it is not universal. 
+
+
+Since it is only not rejected using a certain hardware, we have instead shown that these boards are not ideal devices for this task. Instead we have refuted the claim made by Arduino themselves and devised a program to find the seed when the onboard PRNG is seeded with \texttt{analogRead}, as recommended by Arduino. 
 
 \bibliography{ardrand}{}
 \bibliographystyle{plain}
