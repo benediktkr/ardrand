@@ -165,49 +165,51 @@
 \begin{abstract}
 
   Cheap micro-controllers, such as the Arduino or other controllers
-  based on the Atmel AVR CPUs, are being deployed in a wide variety of
+  based on the Atmel AVR CPUs are being deployed in a wide variety of
   projects, ranging from sensors networks to robotic submarines. In
   this paper, we investigate the feasibility of using the Arduino as a
   true random number generator (TRNG). The Arduino Reference Manual
   recommends using it to seed a pseudo random number generator (PRNG)
   due to its ability to read random atmospheric noise from its
-  analogue pins. This is an enticing application since true true bits
-  of entropy are hard to come by. Unfortunately, we show with
+  analog pins. This is an enticing application since true bits
+  of entropy are hard to come by. Unfortunately, we show by
   statistical methods that the atmospheric noise of an Arduino is
   largely predictable in a variety of settings, and is thus a weak
   source of entropy. We explore various methods to extract true
   randomness from the micro-controller and conclude that it should not
-  be used in good faith to produce randomness from its analogue pins.
+  be used to produce randomness from its analog pins.
 
 \end{abstract}
 
 \section{Introduction}
 % Motivation
 
-So much in our lives may seem random --- so thinking that generating randomness might seem easy at first glance. But when one inquires further one quickly realizes that due to the deterministic nature of CPUs, it is impossible for them to generate random numbers. 
+Various aspects in our lives may seem random --- so thinking that generating randomness might seem easy at first glance. But when one inquires further one quickly realizes that due to the deterministic nature of CPUs, it is impossible for them to generate random numbers. 
 
-However, there is a great need for unpredictable values in cryptography. Almost all encryption schemes relay on the notion of secret keys so those keys must be generated in a unpredictable way, or else the encryption scheme is useless. Examples of this are the keystream in a one-time-pad, the primes in the RSA algorithm and the challenges used in a challenge-response system\cite{menezes1996,anthes2011}.t
+However, there is a great need for unpredictable values in cryptography. Kerckhoff's principle states that ``a cryptosystem should be secure even if everything about the system, except the key, is public knowledge''. Almost all encryption schemes relay on the notion of secret keys so those keys must be generated in an unpredictable way, or else the encryption scheme is useless. Examples of this are the keystream in a one-time-pad, the primes in the RSA algorithm and the challenges used in a challenge-response system~\cite{menezes1996,anthes2011}. Many secure encryption protocols use nonces (numbers used once) to add ``noise'' to messages ~\cite{anthes2011}. If these numbers are predictable, the nonces do not serve much purpose. 
 
-Many secure encryption protocols use nonces (numbers used once) to add ``noise'' in messages\cite{anthes2011}. If these numbers are predictable, the nonces do not serve much purpose. Micro-controllers like the Arduino are heavily used in e.g. sensor networks\cite{tsense} where data integrity is a key issue. It follows that the demand for high quality entropy is rather high in those situations. 
 
-Since regular computers are unable to produce truly random numbers, psuedorandom number generators (denoted PRNG) are mostly used. A PRNG is a one-way function $f$ the generates random sequnces, of either integers or bits, from an intial seed $s$ and then applies the function iteratively to generate the sequcene\cite{menezes1996}. In a cryptographic system, a weak source for the seed weakens the whole system. It may allow an adversary to break it, as was perhaps most notably demonstrated by breaking the method that the Netscape browser used to seed its PRNG\cite{netscape}. 
 
-Thus a PRNG can only be random if its seed is truly random and its output is only a function of the seed data, the actual entropy of the output can never exceed that of the seed. However, it can be computationally infeasible to distinguish between a good PRNG and a perfect RNG. A true random number generator (TRNG) uses a non-deterministic source to produce randomness (e.g. measuring chaotic systems in nature). 
+Since regular computers are unable to produce truly random numbers, psuedorandom number generators (denoted PRNG) are mostly used. A PRNG is a one-way function $f$ the generates random sequnces, of either integers or bits, from an intial seed $s$ and then applies the function iteratively to generate the sequence ~\cite{menezes1996}. In a cryptographic system, a weak source for the seed weakens the whole system. It may allow an adversary to break it, as was perhaps most notably demonstrated by breaking the method that the Netscape browser used to seed its PRNG ~\cite{netscape}. 
 
-The Arduino is a free and open-source electronics sigle-board microcontroller with an Atmel AVR CPU. There are several different version of the board available\footnote{See: \url{http://arduino.cc/en/Main/Boards}}, but we used the Arduino Duemilanove\footnote{See: \url{http://arduino.cc/en/Main/ArduinoBoardDuemilanove} for full specifications} board (with the ATMega328\cite{atmegads} microcontroller) for this research. The Arduino toolkit has the \texttt{analogRead} function that reads from a given analog pin on the board and returns a 10-bit integer. This is what we tried to use in order to extract entropy. This function maps input voltages. 
+Thus a PRNG can only be random if its seed is truly random and its output is only a function of the seed data, the actual entropy of the output can never exceed that of the seed. However, it can be computationally infeasible to distinguish between a good PRNG and a perfect RNG. A true random number generator (TRNG) uses a non-deterministic source to produce randomness e.g. measuring chaotic systems in nature like thermal noise, shot noise or flicker noise, which are all present in resistors ~\cite{intel}. Using background radiation and a Geiger counter is an appealing option, but expensive\footnote{A simple search on Amazon.com reveals that a USB connected Geiger counter costs about \$300} and thus unavailable for the public. 
 
-The Arduino Reference Manual suggests that reading from an unconnected analog pin gives a ``fairly random'' number\cite{ardref}, ideal for seeding the \texttt{avr-libc} PRNG\footnote{Archival of this claim: \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}}. We will later show that this is not true and, and that the reading from an unconnected pin is not very random at all. We will also show that building a RNG with the Arduino is infeasible and that if you follow the Arduino Reference Manual, the sheer lack of possible seeds makes it relatively easy for an adversary to guess the seed.
+The Arduino is a free and open-source electronics single-board micro-controller with an Atmel AVR CPU. There are several different versions of the board available\footnote{See: \url{http://arduino.cc/en/Main/Boards}}, but we used the Arduino Duemilanove\footnote{See: \url{http://arduino.cc/en/Main/ArduinoBoardDuemilanove} for full specifications} board (with the ATMega328 ~\cite{atmegads} micro-controller) for this research. The Arduino toolkit has the \texttt{analogRead} function that reads from a given analog pin on the board and returns a 10-bit integer. This function maps input voltages between 5 and 0 volts to integers in the range $[0..1023]$. This is what we tried to use in order to extract entropy.
 
-We also attempt to build a random bit generator from the Arduino (without adding extra hardware), but we find that this is infeasible. But we will demonstrate a few algorithms and discuss how they perform exposed to statistical testing and the possibilities of finding some entropy. 
+Micro-controllers like the Arduino are heavily used in e.g. sensor networks ~\cite{tsense} where data integrity is a key issue. It follows that the demand for high quality entropy is rather high in those situations. 
+
+The Arduino Reference Manual suggests that reading from an unconnected analog pin gives a ``fairly random'' number ~\cite{ardref}, ideal for seeding the \texttt{avr-libc} PRNG\footnote{Archival of this claim: \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}}. We will later show that the numbers are generally not random, and that the reading from an unconnected pin provides very limited entropy. We will also show that building a RNG with the Arduino is infeasible and that if you follow the Arduino Reference Manual, the sheer lack of possible seeds makes it relatively easy for an adversary to guess the seed. We will provide a proof of concept tool for doing such guesswork automatically. 
+
+We also attempt to build a random bit generator from the Arduino (without adding extra hardware). We will pose and discuss a few algorithms and discuss how they perform statistically speaking testing and how they fare at extracting entropy. Ultimately, we were unable to identify any such method which rises concerns over the use of Arduino as a TRNG. 
 
 \subsection{Contributions}
 
 The contributions of this work are the following:
 
 \begin{itemize}
-\item Implementations of the monobit, poker and runs statistical tests in the Python programming language as well as code that exposes and Arduino to these tests. (Section ~\ref{sec:stattests}.)
-\item A program that given a sequence from the \texttt{avr-libc} PRNG seeded with a value from the \texttt{analogRead}-function on an Arduino, finds the seed value. It is done by first analyzing data from the Arduino and building a probability distribution of the values. The program either collects data directly from the Arduino first or can be supplied with a dataset. We supply a typical dataset with the code. This includes an implementation of the \texttt{avr-libc random} function. (Section ~\ref{sec:seedfind}.)
-\item Rebuttal of the claim made by the Arduino manufactures that \texttt{analogRead} returns ``fairly random'' integers\cite{ardref}. (Section ~\ref{sec:refuting}.)
+\item We implement the monobit, poker and runs statistical tests in the Python programming language, as well as code that exposes an Arduino to these tests. (Section ~\ref{sec:stattests}.)
+\item We wrote a program that given a sequence from the \texttt{avr-libc} PRNG seeded with a value from the \texttt{analogRead}-function on an Arduino, determines the seed value. It was done by first analyzing data from the Arduino and building a probability distribution of the values. The program either collects data directly from the Arduino first or can be supplied with a data set. We supply a typical data set with the code. This includes an implementation of the \texttt{avr-libc random} function. (Section ~\ref{sec:seedfind}.)
+\item We rebut the claim made by the Arduino manufactures that \texttt{analogRead} returns ``fairly random'' integers ~\cite{ardref}. (Section ~\ref{sec:refuting}.)
 
 \end{itemize}
 
@@ -215,41 +217,51 @@ All of the Ardrand code is free software and is maintained at \url{http://gitori
 
 \section{Related Work -  Background}
 
+Hardware random number generators have been designed with various methods. The search for external entropy has lead researchers down imaginative paths.
 
+Air turbulence in hard drives ~\cite{airturb}, which is proven to be a chaotic phenomenon, has been used as a source for random numbers. The raw disk times where both structured and correlated. To remove bias, the authors used the Fast Fourier transform algorithm to remove bias and correlation. The worst case observed bitrate was 100 bits/minute. 
+
+Intel CPUs have contain an on-board RNG ~\cite{intel}. It samples thermal noise, shot noise and flicker noise, all of which are present in resistors. The voltage measured across undriven resistores is amplified, but these measurements are correlated to enviromental charasteristics, such as electromagnetic radiation, temperature and power supply fluctuations. The random source used is derived from two free-running oscillators, one fast and one much slower. The thermal noise is used to modulate the frequenciy of the slower clock. The erratic ticks of the slow clock is then used to trigger measurements of the faster one.
+
+Drift between the two clocks is used as a source for binary random digits. The initial measurements are then processed by the von Neumann box. On average, one bit is generated for every 6 raw binary samples. 
+
+The limitations of using a hard drive as a source of entropy is that not all computers have hard drives. As solid state drives (SSD) become more available, not even all general purpose computers have spinning hard drives any more. Routers and other special purpose hardware do not have exeternal sources for entropy, other than network traffic, which is possibly observeable or even controllable by an adversary. 
+
+One exaple of this is the OpenWRT router ~\cite{lrng}. Since it is based on Linux, it uses the Linux Random Number Generator (LRNG), \texttt{/dev/random} and \texttt{/dev/urandom}. It provides cryptographic services such as SSH, SSL and wireless encryption. It lacks entropy sources other than network interrupts. It has no mouse or keyboard, so it is impossible to use any user interaction to collect entropy. Although this is not part of the LRNG itself, almost all distributions iclude a script that saves the state of the LRNG between reboots. This is done so that when the operating system starts, the LRNG has a fresh starting state. The OpenWRT distribution does not do this and thus the LRNG state is reset to a predictable state on every reboot, only determined by time of day and a constant string. This shows that there is a need for external entropy sources. 
 
 
 \section{Theoretical Considerations}
 
-Let us first define a few terms\cite{menezes1996}.
+We begin by making the notions of ``fairly random'' and ``statistically random'' more precise by defining statistical tests for sequences of integers. Let us first define a few terms ~\cite{menezes1996}.
 
 \begin{mydef}
 A random bit generator (RBG) is a device or algorithm that outputs a sequence of statistically independent and unbiased binary digits.   
 \end{mydef}
 
-A random bit generator can easily be used to generate random numbers (turned into a random number generator). If we desire an integer in the interval $[0, n]$ we can simply generate $\lfloor \lg n \rfloor + 1$ bits and cast over to an integer. If the result exceeds $n$, one option is to discard it and generate a new number. 
+A random bit generator can easily be used to generate random numbers.  To obtain an integer in the interval $[0, n]$ we can simply generate $\lfloor \lg n \rfloor + 1$ bits and cast over to an integer. If the result exceeds $n$, one option is to discard it and generate a new number. 
 
 \begin{mydef}
   
-  A pseudorandom random bit generator (PRBG) is a deterministic algorithm or program that given a truly random binary sequence of length $k$, outputs a binary sequence of of length $l$. The input to the PRGB is called the seed, while the output is called a pseudorandom bit sequence. 
+  A \emph{pseudorandom random bit generator} (PRBG) is a deterministic algorithm or program that given a truly random binary sequence of length $k$, outputs a binary sequence that appears to be random. The input to the PRGB is called the \emph{seed}, while the output is called a \emph{pseudorandom bit sequence}. 
 
   % Menezes says l >> k, figure out if he means bitshifting. 
   
 \end{mydef}
 
-Note that the output from a PRBG is not random. Given the deterministic nature of the algorithm, it will always produce the same sequence for any given seed value. 
+Note that the output from a PRBG is not random in the colloquial sense of the word. Given the deterministic nature of the algorithm, it will always produce the same sequence for any given seed value. 
 
 \begin{mydef}
-Let $s$ be a binary sequence. We say that a run in $s$ of length $n$ is a subsequence consisting of either $n$ consecutive 0's or 1's. Note that a run is neither preceded or proceeded by the same symbol. We call a run of 1's a block and a run of 0's a gap. 
+Let $s$ be a binary sequence. We say that a \emph{run} in $s$ of length $n$ is a subsequence consisting of either $n$ consecutive 0's or $n$ consecutive 1's. A run is neither preceded or proceeded by the same symbol. We call a run of 1's a block and a run of 0's a gap. 
 \end{mydef}
 
 \begin{mydef}
-  Let $s$ be a binary sequence of length $n$ such that $s = s_1, \ldots, s_i, \ldots, s_n$ and let $p_i$ be the probability that $s_i = 1$ for any $i$. Way say that the generator generating $s$ is biased if $p_i \neq \frac 1 2$. 
+  Let $s$ be a binary sequence of length $n$ such that $s = s_0, \ldots, s_{n-1}$ and let $p_i$ be the probability that $s_i = 1$ for any $i$. Way say that the generator generating $s$ is biased if $p_i \neq \frac 1 2$. 
 \end{mydef}
 
-Determining mathematically what is random and what is not is a very hard task --- and proving that a generator is indeed generating random bits is impossible to prove\cite{menezes1996}. There are statistical tests that allow us to detect certain weaknesses a RBG might have. Note that just because a bit sequence from a generator is accepted by the statistical tests, this is not a guarantee that it is indeed random. On the other hand, if it is rejected, we can say that it is non-random. In other word, when a bitsequence is ``accepted'' it really is ``not rejected''. 
+Determining mathematically what is random and what is not is a task --- and proving that a generator is indeed generating random bits is impossible ~\cite{menezes1996}. Measuring randomness is as much a philosophical question as it is a mathematical one. There are however statistical tests that allow us to detect certain weaknesses a RBG might have. Note that just because a bit sequence from a generator is accepted by the statistical tests, there is no guarantee that it is indeed random. On the other hand, if it is rejected, we can say with certainty that it is non-random. In other word, when a bit sequence is ``accepted'' it really is ``not rejected''. 
 
 
-\subsection{$\chi^2$-distribution}
+\subsection{Statistical significance}
 
 We interpret the results of the statistical tests by means of the $\chi^2$-distributions. It is used in the common $\chi^2$-tests to compare goodness-of-fit. The $\chi^2$ distribution with $k$ degrees of freedom is given by
 
@@ -272,20 +284,20 @@ Then we can take our observed data and find an $\chi^2$ statistic, denoted $X^2$
 X^2 = \sum_i^k \frac{(O_i - E_i)^2}{E_i}
 \]
 
-for all $i$, where $E_i$ denotes the expected number and $O_i$ denotes the observed number. Then the number $X^2$ tells us about the significance of the test, given a significance level $\alpha$. This is usually done by means of a table of percentiles. One is found in \cite[p. 178]{menezes1996} and replicating it here is redundant. 
+for all $i$, where $E_i$ denotes the expected number of occurrences and $O_i$ denotes the observed number of occurrences. Then the number $X^2$ tells us about the significance of the test, given a significance level $\alpha$. This is usually done by means of a table of percentiles. 
 
-The degrees of freedom is the number of values that are free to vary. It is worth noting that if we have $m$ different values in our calculations, we can often figure out the $m^{th}$ value from the $m-1$ other values, so then we would have $k=m-1$ degrees of freedom. This is often the case for our tests, such as the Monobit test. 
+The degrees of freedom is the number of variables that are free to vary. It is worth noting that if we have $m$ different values in our calculations, we can often figure out the $m^{th}$ variable from the $m-1$ other values, so then we would have $k=m-1$ degrees of freedom. This is often the case for our tests, such as the Monobit test we will define below.
 
-\subsection{Statistical tests used}
+\subsection{Statistical tests}
 \label{sec:stattests}
 
- Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivations for this is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. There are several others tests available and NIST has published paper\cite{nist} that outlines a few tests such as the \texttt{DIEHARD}\footnote{See \url{http://stat.fsu.edu/~geo/diehard.html}} test suite, the tests outlined by Donald Knuth in The Art of Computer Programming and the Universal Statistical Test by Mauer\cite{mauer}
+ Here we present a few statistical tests we used. We measured against the specifications set forth in FIPS-140-1 ~\cite{fips140, menezes1996} rather than selecting the significance levels ourselves. The motivation is that the FIPS document effectively sets a standard for the tests to satisfy and we therefore have something to measure against. There are several others tests available and NIST has published paper ~\cite{nist} that outlines a few tests such as the \texttt{DIEHARD}\footnote{See \url{http://stat.fsu.edu/~geo/diehard.html}} test suite, the tests outlined by Donald Knuth in The Art of Computer Programming and the Universal Statistical Test by Mauer ~\cite{mauer}
 
 Let $s = s_0, s_1, \ldots, s_{n-1}$ be a binary sequence of length $n$. A single bitstring of length $n = 20000$ from our generator is subjected to each of these tests. If any one of the tests fail, we conclude that the output of our generator is non-random. 
 
 \subsubsection{Monobit test}
 
-In a random sequence, one would expect that the number of 1's and 0's are about the same. This test gives us a statistic on this distribution. Let $n_o$ denote the number of 0's and $n_1$ the number of 1's. We then find the statistic
+In a random bit sequence, one would expect that the number of 1's and 0's are about the same. This test gives us a statistic on this distribution. Let $n_0$ denote the number of 0's and $n_1$ the number of 1's. We then find the statistic
 
 \begin{equation}
 X_1 = \frac{(n_0 - n_1)^2}{2}
@@ -295,15 +307,15 @@ which approximately follows a $\chi^2$ distribution with $1$ degree of freedom (
 
 \subsubsection{Poker test}
 
-The poker test tests for certain sequences of five numbers (bits) at a time, based on hand in poker. In a random sequence we would expect that each hand would appear approximately the same number of times in $s$. Let $m$ be a positive integer such that 
+The poker test tests for certain sequences of five numbers (bits) at a time, similar to a hand in poker. In a random sequence we would expect that each hand would appear approximately the same number of times in $s$. Let $m$ be a positive integer such that 
 
 \[
 \lfloor \frac n m \rfloor \geq 5 \cdot 2^m  
 \]
 
-and let $k = \lfloor \frac n m \rfloor$. We divide the sequence $s$ into $k$ non-overlapping parts of length $m$ and let $n_i$ denote the number of sequences of ``type'' $i$.
+and let $k = \lfloor \frac n m \rfloor$. We divide the sequence $s$ into $k$ disjoint parts of length $m$ and let $n_i$ denote the number of sequences of ``type'' $i$.
 
-For a binary sequence $s_i \in s$, where $|s_i| = m$ , we let $n_i$ be the number of sequences where $i$ equals the decimal representation of $s_i$. Note that $0 \leq i \leq 2^m$. 
+For a binary sequence $s_i \in s$, where $|s_i| = m$, we let $n_i$ be the number of sequences where $i$ equals the decimal representation of $s_i$. Note that $0 \leq i \leq 2^m$. 
 
 The statistic used is then
 
@@ -327,16 +339,16 @@ Let $k$ be equal to the largest integer $i$ for which $e_i \geq 5$, or $k = \max
 X_4 = \sum_{i=1}^k \frac{(B_i - e_i)^2}{e_i} + \sum_{i=1}^k \frac{(G_i - e_i)^2}{e_i}
 \end{equation}
 
-which approximately follows a $\chi^2$ distribution with 2k-2 degrees of freedom. We note that this is exactly finding the $\chi^2$ statistic since the number of runs is the sum of all gaps and blocks. 
+which approximately follows a $\chi^2$ distribution with 2k-2 degrees of freedom. We note that this exactly finds the $\chi^2$ statistic since the number of runs is the sum of all gaps and blocks. 
 
 \subsection{FIPS140-1 bounds}
 
-We use the FIPS-140-1 bounds\cite{fips140} for the tests of our Arduino RBG. Let $s$ be a bit sequence of length 20 000. The documents states explicit bounds as follows:
+We use the FIPS-140-1 bounds ~\cite{fips140} for the tests of our Arduino RBG. Let $s$ be a bit sequence of length 20,000. The documents states explicit bounds as follows:
 
 \begin{description}
 \item[Monobit test] The test is passed if $9.654 < X_1 < 10.346$ and the number $n_1$ of 1's should satisfy $9654 < n_1 < 10346$. Should follow a $\chi^2$ with 1 degree of freedom. 
 \item[Poker test] The statistic $X_3$ is computed for $m=4$ and the test is passed if $1.03 < X_3 < 57.4$. Should follow a $\chi^2$ with 15 df. 
-\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in table ~\ref{tab:fipsbounds}. This must hold for both blocks and gaps, all 12 counts must lie within the bounds. Should follow a $\chi^2$ with 16 df. 
+\item [Runs test] We count the number of blocks and gaps of length $i$ --- $B_i$ and $G_i$ respectively --- in the sequence $s$, for each $1 \leq i \leq 6$. For the purpose of this test, runs of length greater than 6 are said to be of length 6 ~\cite{fips140}. The test is passed if the number of runs is each within the corresponding intervals below in table ~\ref{tab:fipsbounds}. The bounds must hold for both blocks and gaps, all 12 counts must lie within the bounds. The distribution should follow a $\chi^2$ with 16 df. 
 
   \begin{table}[H]
     \begin{center}
@@ -363,18 +375,18 @@ We use the FIPS-140-1 bounds\cite{fips140} for the tests of our Arduino RBG. Let
 
 \subsection{Decorrelation with the von Neumann box}
 
-Decorrelation is a term that refers to reducing autocorrelation (the similarity between observations as a function of the time separation between them). A source of randomness may be faulty in that the output of it is either biased or correlated. 
+Decorrelation is a term that refers to reducing autocorrelation, the similarity between observations as a function of the time separation between them. This should not be observed in a random sequence, since the very definition of randomness implies differences in the sequence. A source of randomness may be faulty in that the output of it is either biased or correlated. 
 
-Suppose that the probability that a RBG generates a 1 with a probability $p$ and a 0 with probability $1-p$, where $p$ is unknown but fixed. We group the output of the generator into pairs of two bits. The pairs 00 and 11 are discarded, and a 10-pair is transformed to a 1-bit while a 01-pair is transformed into a 0. This is the von Neumann-corrector\cite{menezes1996, intel} or -box. 
+Suppose that the probability that a RBG generates a 1 with a probability $p$ and a 0 with probability $1-p$, where $p$ is unknown but fixed. We group the output of the generator into pairs of two bits. The pairs 00 and 11 are discarded, and a 10-pair is transformed to a 1-bit while a 01-pair is transformed into a 0. This procedure is called the von Neumann-corrector ~\cite{menezes1996, intel} or von Neumann-box. 
 
 \subsection{Algorithms used to try to extract entropy from the Arduino}
 \label{sec:algs}
 
 We implemented several algorithms in our search for entropy. These are descriptions of our algorithms. 
 
-The \texttt{Mean-RAND} algorithm is implemented by keeping a list of the $k$ last values and their mean. Then we compare the new reading to the mean and evalute to 0 if it is less, otherwise 1. To remove bias and lessen correlation we run it through the von Neumann-box. 
+The \texttt{Mean-RAND} algorithm is implemented by keeping a list of the $k$ last values and their mean. Then we compare the new reading to the mean and evalute to 0 if it is less, otherwise 1. To remove bias and reduce correlation we run it through the von Neumann-box. 
 
-\begin{lstlisting}[caption=The \texttt{Mean-RAND} algorithm in Python-ish pseudocode]
+\begin{lstlisting}[caption=The \texttt{Mean-RAND} algorithm in Python esque pseudocode]
 def meanrand(n):
   buf = deque([0]*k)
   for i in [0..k]:
@@ -391,7 +403,7 @@ def meanrand(n):
     yield vNbox(1 if analogRead() > m else 0)
   \end{lstlisting}
 
-The \texttt{Updown-RAND} algorithm first reads an initial value $v_0$ which is then used to determins if the next bit value $v_1$ is 1 if $v_1 > v_0$ and 0 otherwise. We do this twice, i.e. we collect $v_{1,0}$ and $v_{1,1}$ and compare them with the von Neumann box until we obtain a legit bit. This algorithm showed a very low performance and bandwidth and has consistently failed the statistical tests. 
+The \texttt{Updown-RAND} algorithm first reads an initial value $v_0$ which is then used to determine if the next bit value $v_1$ is 1 if $v_1 > v_0$ and 0 otherwise. We do this twice, i.e. we collect $v_{1,0}$ and $v_{1,1}$ and compare them with the von Neumann box until we obtain a legit bit. This algorithm showed low performance and bandwidth, and has consistently failed the statistical tests. 
 
 \begin{lstlisting}[caption=The \texttt{Updown-RAND} algorithm]
 def updownrand(n):
@@ -400,7 +412,7 @@ def updownrand(n):
     yield vNbox(1 if analogRead() > v0 else 0)
 \end{lstlisting}
 
-The \texttt{MixMeanUpdown-RAND} algorithm acquires one bit from \texttt{Mean-RAND} and one from \texttt{Updown-RAND} and XORs them together to produce a new bit. Since this one is dependent on \texttt{Updown-RAND} it performs even worse, both in regards to bandwidth and entropy. 
+The \texttt{MixMeanUpdown-RAND} algorithm acquires one bit from \texttt{Mean-RAND} and one from \texttt{Updown-RAND} and XORs them together to produce a new bit. Since this method is dependent on \texttt{Updown-RAND} it performs even worse, both in regards to bandwidth and entropy. 
 
 \begin{lstlisting}[caption=The \texttt{MixMeanUpdown-RAND} algorithm]
 def mixmeanupdown(n):
@@ -410,7 +422,7 @@ def mixmeanupdown(n):
     yield vNbox(m.next()^u.next())
 \end{lstlisting}
 
-Let $a = a_9 \ldots a_1a_0$ be the binary representation of a 10-bit integer read from the \texttt{analogRead}-function on the Arduino. The \texttt{Leastsign-RAND} algorithm simply yields the least significant bit $a_0$. As expected, this algorithm shows greater performance and some promise in regards to randomness. We use the von Neumann-box for decorrelation purposes as usual. 
+Let $a = a_9 \ldots a_1a_0$ be the binary representation of a 10-bit integer read from the \texttt{analogRead}-function on the Arduino. The \texttt{Leastsign-RAND} algorithm simply yields the least significant bit $a_0$. As expected, this algorithm shows greater performance and some promise in regards to randomness. We use the von Neumann-box for decorrelating the output. 
 
 \begin{lstlisting}[caption=The \texttt{Leastsign-RAND} algorithm]
 def mixmeanupdown(n):
@@ -420,8 +432,8 @@ def mixmeanupdown(n):
 
 The \texttt{TwoLeastsign-RAND} algorithm works in a very similar fashion. Instead of just using the least significant bit, we use the two least significant bits $a_0$ and $a_1$, XOR them together and run through the von Neumann-box. This algorithm has shown the greatest potential for entropy and has also been implemented on the Arduino itself.
 
-\begin{lstlisting}[caption=The \texttt{Leastsign-RAND} algorithm]
-def mixmeanupdown(n):
+\begin{lstlisting}[caption=The \texttt{TwoLeastsign-RAND} algorithm]
+def twoleastsign(n):
   for i in [0..n]:
     yield vNbox(analogRead()&1^(analogRead()>>1)&1)
 \end{lstlisting}
@@ -430,16 +442,16 @@ def mixmeanupdown(n):
 
 \subsection{NIST Security Levels}
 
-National Institute of Standards and Technology (NIST, America) has defined\cite{fips140} four basic security levels for cryptographic modules, such as RBGs and RNGs, as well as explicit bounds for statistical tests a RBG must satisfy. The security levels can be outlined as
+National Institute of Standards and Technology (NIST, America) has defined ~\cite{fips140} four basic security levels for cryptographic modules, such as RBGs and RNGs, as well as explicit bounds for statistical tests a RBG must satisfy. The security levels can be outlined as follows
 
 \begin{description}
 \item[Security level 1] is the lowest level of security that specifies basic requirements for a cryptographic module. No physical mechanisms are required in the module beyond protection-grade equipment. It allows software cryptography functions to be performed by a regular computer. Examples of systems of level 1 include Integrated Circuit Boards and add-on security products. 
 
 \item[Security level 2] adds the requirement for tamper-proof coatings and seals, or pick-resistant locks. The coatings or seals would be placed on the module so that it would have to be broken in order to attain physical access to the device. It also adds the requirement that a module must authenticate that an operator is authorized to assume as specific role. 
 
-\item[Security level 3] extends the requirements of level 2 to prevent the intruder from gaining access to critical security parameters within the module and if a cover is opened or removed, the critical parameters are zeroized. 
+\item[Security level 3] extends the requirements of level 2 to prevent the intruder from gaining access to critical security parameters within the module and if a cover is opened or removed, the critical parameters are erased. 
 
-\item[Security level 4] is the highest level of security. It protects the module from compromise of its security by environmental factors, such as voltage or temperature fluctuations. If one attempts to cut through an enclosing of the module, it should detect this attempt and zeroize all sensitive data. Most existing products do not meet this level of security. 
+\item[Security level 4] is the highest level of security. It protects the module from compromise of its security by environmental factors, such as voltage or temperature fluctuations. If one attempts to cut through an enclosing of the module, it should detect this attempt and erase all sensitive data. Most existing products do not meet this level of security. 
 \end{description}
 
 Although we were not aiming for physical security in this research, aiming for security level 1 seems like a reasonable decision. Note that in order for a device to conform to any of the security modules it has be able to perform self-tests, both at request and start-up. We implemented the tests in the Python programming language on a general-purpose computer. 
@@ -449,7 +461,9 @@ FIPS140-1 specifies that the sample must be 20 000 bits, or 2.5KB. But the Ardui
 
 \section{Experimental Results}
 
-We began by analyzing the output of the function \texttt{analogRead} on the Arduino in various different settings. We found that the output is dependent on several environmental factors, some of which are unknown to us. Reading from different pins gives different scopes of values, but the behavior is the same. We will show graphs of all pins on one Arduino connected to two computers to back this claim, see Figure ~\ref{fig:allpins}. What computer the Arduino is connected to matters. On one computer tested, one of our algorithms produces sequences that are not rejected. 
+We began by analyzing the output of the function \texttt{analogRead} on the Arduino in various different settings. We found that the output is dependent on several environmental factors, some of which are unknown to us. Reading from different pins gives different scopes of values, but the behavior is the same. We will show graphs of all pins on one Arduino connected to two computers to back this claim, see Figure ~\ref{fig:allpins}. The computer to which the Arduino is connected to affects the results. On one computer tested, one of our algorithms produces sequences that were not rejected by the statistical tests. 
+
+We want to know if, and how much, the environment affects the results. We also investigate how and if we can use the \texttt{analogRead} output to find entropy and how we test for randomness. 
 
   \begin{figure}[h!]
     \centering  
@@ -462,7 +476,7 @@ We began by analyzing the output of the function \texttt{analogRead} on the Ardu
       \includegraphics[width=0.55\columnwidth]{img/allpinsd620.png}
     }
 
-    \caption{Readings from Ard2 taken over all pins on both the desktop and D620 laptop}
+    \caption{Readings from Ard3 taken over all pins on both a desktop computer and a D620 laptop.}
     \label{fig:allpins}
         
   \end{figure}
@@ -481,19 +495,19 @@ These are descriptions of the computers used for the experiments.
 % \end{description}
 
 \begin{itemize}
-\item A no-name desktop computer with a Gigabyte GA-MA69GM-S2H motherboard. Running Debian GNU/Linux testing/wheezer.
-\item A Dell D505 laptop running Ubuntu GNU/Linux Maverick Meekat 11.04.
-\item A Dell D620 laptop running Ubuntu GNU/Linux Maverick Meekat 11.04 as well. 
+\item A no-name desktop computer with a Gigabyte GA-MA69GM-S2H motherboard. This machine runs the Debian GNU/Linux testing/wheezer operating system.
+\item A Dell D505 laptop. This machine runs the Ubuntu GNU/Linux Maverick Meekat 11.04 operating system.
+\item A Dell D620 laptop. This machine runs the Ubuntu GNU/Linux Maverick Meekat 11.04 operating system as well.
 \end{itemize}
 
-The D505 laptop and the Desktop computer show the exact same behavior and are thus interchangeable, of our computers --- only the D620 differs. For this research we used three distinct but identical Arduino Duemilanove boards with the ATMega 328 microcontroller. To distinguish between them, we call them ard1, ard2 and ard3. These names are also used to distinguish between them in our datasamples. 
+We found that both the laptops showed same or similar behavior, both on raw outputs and statistical testing, but the desktop differed. It is unclear what aspects trigger the deviations but we will discuss this point further in section ~\ref{sec:harvest}. For our research we used three identical Arduino Duemilanove boards with the ATMega 328 micro-controller. To distinguish between them, we call them ard1, ard2 and ard3. These names are also used to distinguish between them in our data samples. 
 
 \subsection{Analysis of \texttt{analogRead}}
 
 
-Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that it plays some role and that where you place it definitely has effect on the output. It shows readings taken in various different places\footnote{In the study of the author} --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
+Our first hypothesis was the space and volume of the area that the Arduino resided in affected the values. If we look at Figure ~\ref{fig:ard3space} we can see that the environment lays some role and that where you place it definitely has effect on the output. The figure shows readings taken in various different places --- in an open space, a closed cupboard, inside a computer case and in a larger open space. 
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering  
   \includegraphics[width=0.7\columnwidth]{img/RoomTempOverlay.png}
   
@@ -501,17 +515,18 @@ Our first hypothesis was the space and volume of the area that the Arduino resid
   \label{fig:ard3space}
 \end{figure}
 
-What is more, by looking at the graph it becomes evident that there is not much entropy available. Note the drop at the beginning; it does not appear when connected to all computers, e.g. specifically when connected to the D620 laptop (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same Arduino device, in the same setting. The only factor is the computer used. When connected to the D620, one algorithm is not rejected by any of our tets. 
+Moreover, by looking at the graph it becomes evident that there is limited entropy available. Note the drop at the beginning; it does not appear for all computers, e.g. specifically when connected to the D620 laptop (see Figure ~\ref{fig:gfgarageard3}). It should be noted that the data originates from the same Arduino device, in the same setting. The only factor is the computer used. 
+
+
+
+Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise ~\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage.png}
+  \includegraphics[width=0.7\columnwidth]{img/ard3gfgarage2.png}
   \caption{Readings from ard3 connected to the D620 laptop}
   \label{fig:gfgarageard3}
 \end{figure}
-
-
-Our experiments have shown that the output is fairly regular and if we look at Figure ~\ref{fig:ardzoom}, showing more limited ranges of readings, we see that the structure and apparent lack of entropy. The readings should have been heavily influenced by analog noise\cite{ardref}. This is further investigated in section ~\ref{sec:refuting}. 
 
 \begin{figure}[h!]
   % \centering  
@@ -535,48 +550,64 @@ Our experiments have shown that the output is fairly regular and if we look at F
 \end{figure}
 
 
-Note the interference patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. Although we are not sure what causes these patters, electrical fluctuations seem like a worthy candidate. These patterns might also be a product of the analogue pins themselves, or their manufacturing process. This is beyond the scope of this paper. 
+Note the interference patterns in e.g. figures ~\ref{fig:ard1freezer} and \ref{fig:ard1heat} --- they show up more clearly in the case of the temperature experiments since we see a much wider range of values. Although we are not sure what causes these patters, electrical fluctuations are a potential candidate. These patterns might also be a product of the analogue pins themselves, or their manufacturing process. The exact physical causes for this phenomenon appear complex and are beyond the scope of this paper. 
 
-
+\FloatBarrier
 \subsubsection{Effects of temperature}
 \FloatBarrier
 
-Temperature is a key environmental factor. We see a much broader range of values when operating in heat or cold. The figures ~\ref{fig:ard1heat}, \ref{fig:ard1freezer} and\ref{fig:ard1fridge} show the output from \texttt{analogRead} in various temperature conditions of the extreme kinds. Note that ~\ref{fig:ard1freezer} only has 10000 values, as opposed to the 50000 values in all the other figures. This is because the Arduino simply stops working after a few minutes at $-11^\circ$C. Arduino have not released any information regarding operating temperatures but according to AVR the operating temperatures for the ATMega 328 microcontroller is $-40^\circ$C to $85^\circ$C \cite{atmegads}. One of our Arduino boards (ard1) broke after spending 4 hours in the freezer at $-12^\circ$C, so we conclude that some other component(s) on the board survive less cold than the microcontroller itself. 
+Temperature is a key environmental factor. We see a much broader range of values when the Arduino is operating in heat or cold. The figures ~\ref{fig:ard1heat}, \ref{fig:ard1freezer} and ~\ref{fig:ard1fridge} show the output from \texttt{analogRead} in various temperature conditions of the extreme kinds. Note that Figure ~\ref{fig:ard1freezer} only has 10000 values, as opposed to the 50000 values in all the other figures. This is because the Arduino simply stops working after a few minutes at $-11^\circ$C. Arduino have not released any information regarding operating temperatures but according to AVR the operating temperatures for the ATMega 328 micro-controller is $-40^\circ$C to $85^\circ$C  ~\cite{atmegads}. One of our Arduino boards (ard1) broke after spending 4 hours in the freezer at $-12^\circ$C, so we conclude that some other component(s) on the board survive less cold than the micro-controller itself. 
 
 
 
-\begin{figure}[H]
+\begin{figure}[h!]
   \centering  
-  \includegraphics[width=0.5\columnwidth]{img/Heating50k.png}
-  \caption{Readings on top of a hot heating element (approx. 40C) connected to the Dell D505}
+  \includegraphics[width=0.6\columnwidth]{img/heating.png}
+  \caption{Readings on top of a hot heating element (approx. 40C) connected to a Dell D505}
   \label{fig:ard1heat}
 \end{figure}
 
-\begin{figure}[h!]
-  \centering  
-  \includegraphics[width=0.5\columnwidth]{img/Freezer10k.png}
-  \caption{Reading inside a freezer (approx. -11C) at setting connected to the Dell D620}
-  \label{fig:ard1freezer}
-\end{figure}
+%\begin{figure}[h!]
+%  \centering  
+%  \includegraphics[width=0.6\columnwidth]{img/freezer.png}
+%  \caption{Reading inside a freezer (approx. -11C) at setting connected to a Dell D620w}
+%  \label{fig:ard1freezer}
+%\end{figure}
   
-\begin{figure}[h!]
-  \centering  
-  \includegraphics[width=0.5\columnwidth]{img/Fridge50k.png}
-  \caption{Reading inside a fridge (approx. 1C) at setting connected to the Dell D505}
-  \label{fig:ard1fridge}
-\end{figure}
+%\begin{figure}[h!]
+%  \centering  
+%  \includegraphics[width=0.6\columnwidth]{img/fridge.png}
+%  \caption{Reading inside a fridge (approx. 1C) at setting connected to a Dell D505}
+%  \label{fig:ard1fridge}
+%\end{figure}
 
+  \begin{figure}[h!]
+    \centering  
+    \subfloat[Fridge (approx. 1C)]{
+      \includegraphics[width=0.5\columnwidth]{img/fridge.png}
+      \label{fig:ard1fridge}
+    }
+    \subfloat[Freexer (approx. -11C)]{
+      \includegraphics[width=0.5\columnwidth]{img/freezer.png}
+      \label{fig:ard1freezer}
+    }
+
+    \caption{Readings in cold temperatures with a Dell D505 laptop}
+    \label{fig:ardcold}
+        
+  \end{figure}
  
 
 
 \FloatBarrier
 \subsection{Harvesting entropy and statistical testing}
+\label{sec:harvest}
 
 We subject the output of the \texttt{RAND} algorithms described in section ~\ref{sec:algs} to the statistical tests described in section ~\ref{sec:stattests}. These are our results using the three different computers used in our experiments. 
 
-We used a baudrate of 115200 bps (highest available for the Arduino over the FTDI RS232-to-USB connection) in these experiments for maximum bandwidth. The maximum reading rate of \texttt{analogRead} is about 10000 times per second\cite{ardref}. When we read\footnote{See \texttt{poll.py} in the Ardrand codebase} iteratively from \texttt{analogRead} over USB,  \texttt{pyserial} will raise either an \texttt{OSError} or \texttt{SerialException}. This happens approximately once every 500 times and reading the \texttt{pyserial} source code\footnote{See \url{http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm}} we find a comment stating that ``disconnected devices, at least on Linux, show the behavior that they are always ready to read immediately but reading returns nothing''. We therefore conclude that these exceptions are the result of \texttt{analogRead} blocking for moment. 
+We used a baudrate of 115200 bps, fast available for the Arduino over the FTDI RS232-to-USB connection, in these experiments for maximum bandwidth. The maximum reading rate of \texttt{analogRead} is about 10000 times per second ~\cite{ardref}. When we read\footnote{See \texttt{poll.py} in the Ardrand codebase} iteratively from \texttt{analogRead} over USB,  \texttt{pyserial} will raise either an \texttt{OSError} or \texttt{SerialException}. This happens approximately once every 500 times and reading the \texttt{pyserial} source code\footnote{See \url{http://www.java2s.com/Open-Source/Python/Development/pySerial/pyserial-2.5-rc2/serial/serialposix.py.htm}} we find a comment stating that ``disconnected devices, at least on Linux, show the behavior that they are always ready to read immediately but reading returns nothing''. We therefore conclude that these exceptions are the result of \texttt{analogRead} blocking for moment. 
 
-These are the results of our \texttt{RAND} algorithms using all three computers, subjected to the FIPS boundaries. Each bitsequence tested is 20000 bits long and each recorded result is the average of three consecutive runs. Green means Accepted and red Rejected. 
+These are the results of our \texttt{RAND} algorithms using all three computers, subjected to the FIPS boundaries. Each bit sequence tested is $n = 20000$ bits long and each recorded result is the average of three consecutive runs. Green means Accepted and red Rejected. 
 
 \subsubsection{Results with Desktop computer}
 
@@ -631,12 +662,12 @@ These are the results of our \texttt{RAND} algorithms using all three computers,
         \hline
         \texttt{Leastsign} & \textcolor{green}{$n_1 = 10 006$}
         & \textcolor{green}{$X_3 = 34.59$}
-        & \textcolor{yellow}{\textbf{Rejected}}
+        & \textcolor{red}{\textbf{(Rejected)}}
         & \textcolor{green}{\textbf{Accepted}}
         & 290.55 bps \\
 
-        \texttt{Twoleastsign} & \textcolor{green}{$n_1 = 10027$}
-        & \textcolor{green}{$X_3 = 10036$}
+        \texttt{Twoleastsign} & \textcolor{green}{$n_1 = 10 027$}
+        & \textcolor{green}{$X_3 = 10.36$}
         & \textcolor{green}{\textbf{Accepted}}
         & \textcolor{green}{\textbf{Accepted}}
         & 172.0 bps \\
@@ -656,7 +687,10 @@ These are the results of our \texttt{RAND} algorithms using all three computers,
 
 We can see that the \texttt{Twoleastsign-RAND} algorithm here produces sequences that are not rejected as being non-random. The \texttt{Leastsign-RAND} algorithm is a little less consistent since it is rejected by the tuns tests some of the time.
 
- As we can see in Figure ~\ref{fig:gfgarageard3} and ~\ref{fig:allpinsd620}, \texttt{analogRead} is producing different patterns (and no drop) on this computer, compared to our other computers. Note the drop on pin 3 in the beginning. Curiously, the \texttt{Twoleastsign-RAND} algorithm will fail we choose pin 3. There is no guarantee that these sequences are truly random, they have just not been rejected as non-random. This shows that using some computers, the Arduino could possibly work as a RBG. But for it to be a RBG, it has to work using all PC hardware, in all settings. 
+We have exposed sequences that pass our statistical tests to a statistical test suite made available by NIST\footnote{See \url{http://csrc.nist.gov/groups/ST/toolkit/rng/index.html}}. This suit consists of 15 tests, some of which are also implemented by us. We found that when a sequences passes our tests, it will also pass all the NIST tests. This implies that it is possible to generate random bits on the Arduino, but it is reliant on external factors that are not fully known to us. Our best guess is that the voltage from the USB connection on the computer influences the regularity of the \texttt{analogRead} readings. 
+
+ As we can see in Figure ~\ref{fig:gfgarageard3} and ~\ref{fig:allpinsd620}, \texttt{analogRead} is producing different patterns (and no initial drop) on this computer, compared to the desktop computer. Note the drop on pin 3 in the beginning. Curiously, the \texttt{Twoleastsign-RAND} algorithm will fail when we choose pin 3. There is no guarantee that these sequences are truly random, they have just not been rejected as non-random. This shows that using some computers, the Arduino could possibly work as a RBG. But for a device to be a RBG, it has to work using all PC hardware, in all settings. 
+
 
 \subsubsection{Results with the D505 laptop}
 
@@ -667,6 +701,23 @@ We can see that the \texttt{Twoleastsign-RAND} algorithm here produces sequences
         Algorithm & Monobit & Poker & Runs & Long runs & Bandwidth\\
         \hline
         \hline
+        \texttt{Leastsign} & \textcolor{green}{$n_1 = 10 033$}
+        & \textcolor{green}{$X_3 = 27.4$}
+        & \textcolor{red}{\textbf{Failed}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 473.32 bps \\
+
+        \texttt{Twoleastsign} & \textcolor{green}{$n_1 = 10080$}
+        & \textcolor{green}{$X_3 = 18.68$}
+        & \textcolor{green}{\textbf{(Accepted)}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 240.0 bps \\
+
+        \texttt{Mean} & \textcolor{green}{$n_1 = 9980$}
+        & \textcolor{red}{$X_3 = 3365.65$}
+        & \textcolor{red}{\textbf{Rejected}}
+        & \textcolor{green}{\textbf{Accepted}}
+        & 27.1 bps \\
 
 
         \hline
@@ -675,6 +726,8 @@ We can see that the \texttt{Twoleastsign-RAND} algorithm here produces sequences
     \label{tab:res1}
     \caption{Statistical with the D505 laptop}
   \end{table}
+
+This computer has shown inconsistent test results and sequences produced by it will sometimes be accepted by the poker and runs tests, while sometimes they are not. As before, the causes for this are unknown to us and open for speculations. 
 
 
 \section{Breaking the Arduino as a RNG}
@@ -685,7 +738,7 @@ This section is twofold. We will both show that using the \texttt{analogRead} fu
 \label{sec:refuting}
 
 
-The Arduino Reference Manual\cite{ardref} states the following in the section about the \texttt{randomSeed} function. This claim is at the time of writing found in the manual, and is available via The Internet Archive\footnote{\url{http://www.archive.org}} at \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}. The reference manual is only available online. 
+The Arduino Reference Manual ~\cite{ardref} states the following in the section about the \texttt{randomSeed} function. This claim is at the time of writing found in the manual, and is available via The Internet Archive\footnote{\url{http://www.archive.org}} at \url{http://web.archive.org/web/20110428064453/http://arduino.cc/en/Reference/RandomSeed}. The reference manual is only available online. 
 
 \begin{quote}
 ``If it is important for a sequence of values generated by random() to differ, on subsequent executions of a sketch, use randomSeed() to initialize the random number generator with a fairly random input, such as analogRead() on an unconnected pin.''
@@ -697,13 +750,13 @@ The first issue with \texttt{analogRead} is that it only returns 10-bit integers
 
 As we can see from Figure~\ref{fig:allpins} there are only roughly 100-400 values that show up, but it is worth noting that using different pins give us different scopes of values. Note the drop when using the desktop but not the D620 laptop. 
 
-We exposed the output from \texttt{analogRead} to the same statistical tests as our \texttt{RAND} algorithms. In order to use the FIPS-bounds to measure against we needed 20 000 bits, or 2000 10-bit integers that we converted to binary. We state the null hypothesis
+We exposed the output from \texttt{analogRead} to the same statistical tests as our \texttt{RAND} algorithms. In order to use the FIPS-bounds to measure against we needed 20 000 bits, or 2000 10-bit integers that we converted to binary. We state the null hypothesis as follows, 
 
 \[
-H_0 = \text{The output from \texttt{analogRead} is "fairly random"}
+H_0 = \text{The output from \texttt{analogRead} is "statistically random"}
 \]
 
-and show that the results are statistically significant and we can reject it as non-random. These are the average over three consecutive runs in setting 0. 
+and show that the results are statistically significant and we can reject it as non-random. Note that Arduino claim that the output is ``fairly random'' and not ``statistically random''. These are the average over three consecutive runs in setting 0. 
 
   \begin{table}[H]
     \begin{center}
@@ -739,9 +792,9 @@ X_{n+1} \equiv 7^5 \cdot X_n \pmod{2^{31} -1}.
 
 In order to account for the diversity in values that the Arduino outputs in various settings, our implementation inputs either a text file of samples or can connect to an Arduino board and collect fresh samples. To provide the same interface, this is implemented by means of inherited classes in the code. 
 
-Let $C$ denote the number of calls a program has made to the PRNG in order to generate a sequence $s$. Let $m$ be our best-guess or estimation of the unknown $C$. Our program inputs $s$ and $m$, as well as a sample source. It then builds a list of values in the range $[0, 1023]$, sorted by the frequency by which they appear in the given sample. Let $P$ denote this list of probability distributed values.
+Let $C$ denote the number of calls a program has made to the PRNG in order to generate a sequence $s$. Let $m$ be our best-guess or estimation of the unknown $C$. Our program inputs $s$ and $m$, as well as a sample source. It then builds a list of values in the range $[0, 1023]$, sorted by the frequency by which they appear in the given sample. Let $P$ denote this list of probability distribution values.
 
-We then create one deque for each of the $1024$ values in P. Let $k$ be the length of the sequence $s$. For all $i \in P$ we create a deque with $k$ pseudo random integers derived from $i$ as a seed. Then we iterate over $P$ and generate $k+m$ integers for each deque (holding $k$ values at a time) until we find the sequence. 
+We then create one bidirectional queue for each of the $1024$ values in P. Let $k$ be the length of the sequence $s$. For all $i \in P$ we create a deque with $k$ pseudo random integers derived from $i$ as a seed. Then we iterate over $P$ and generate $k+m$ integers for each deque (holding $k$ values at a time) until we find the sequence. 
 
 Here is pseudo-code for our program. The functions \texttt{srandom} and \texttt{random} are the seeding function for the \texttt{avr-libc} PRNG and random function, respectively. 
 
@@ -758,7 +811,7 @@ def findseed(s, m, samplesource):
     lastk[i] = deque([random() for _ in range(k)])
     # Did we receive a sequence derived directly from the seed?
     if lastk[i] == s:
-      return i+
+      return i
 
   while True:
     for i in P:
@@ -775,16 +828,18 @@ This program has running bounds given by $\mathcal{O}(C)$, since it has a endles
 
 \subsubsection{Possible optimizations}
 
-While this program runs reasonably fast in practice, one can think of optimizations of the code. Let $G$ a sorted list of observed values in the sample source. Then one variation of the \texttt{findseed} program might generate sequences from each value $g \in G$ as seed for some constant time $t$ before moving on to the unlikelier values that are in $P-G$, the unobserved values. Thus we would spend $t$ times more time on the likelier values. The while loop of this variation would look like
+While this program runs reasonably fast in practice, one can think of optimizations of the code. Let $G$ a sorted list of observed values in the sample source. Then one variation of the \texttt{findseed} program might generate sequences from each value $g \in G$ as seed for some constant time $t$ before moving on to the less likelier values that are in $P-G$, the unobserved values. Thus we would spend $t$ times more time on the more probable values. The while loop of this variation would look like
 
 \begin{lstlisting}[caption=One possible optimization of the \texttt{findseed} program]
 ...
   while True:
+    # Iterate over a sorted list of the observed values
     for i in G:
       for _ in range(t*(m+k)):
         expand(lastk[i])
         if lastk[i] == s:
           return i
+    # Check the unobserved values, but spend less time there
     for i in P-G:
       for _ i range(m+k):
         expand(lastk[i])
@@ -801,10 +856,12 @@ def expand(que):
 
 \section{Conclusions}
 
-The primary goal of this project was to investigate the feasibility of using vanilla Arduino Duemilanove boards without add-on hardware as cheap RBG devices, in hopes of building a true hardware random number generator. Early on, we realized that there simply wasn't enough entropy available to build a RBG. Most to our surprise, we found that using one of our computers, it seems to work as a RBG, or at least it was not rejected by our implemented statistical tests, that had rejected everything else. Due to the very nature of randomness, we cannot say for sure that it is indeed producing random bits --- we can only note that it was not rejected as non-random. But since this is only the case using specific hardware, we must reject the Arduino as a RBG since it is not universal. 
+The primary goal of this project was to investigate the feasibility of using vanilla Arduino Duemilanove boards without add-on hardware as cheap RBG devices, in hopes of building a true hardware random number generator. Early on, we realized that there simply wasn't enough entropy available to build a RBG. Most to our surprise, we found that using some of our computers, the Arduino seems to work as a RBG when using a novel algorithm. The output strings were not rejected by our implemented statistical tests that had rejected everything else. It should be noted that due to the very nature of randomness, we cannot say for sure that it is indeed producing random bits --- we can only state that it was not rejected as non-random. But since this is only the case using specific hardware, we must reject the Arduino as a RBG since it is not universal. 
 
 
-Since it is only not rejected using a certain hardware, we have instead shown that these boards are not ideal devices for this task. Instead we have refuted the claim made by Arduino themselves and devised a program to find the seed when the onboard PRNG is seeded with \texttt{analogRead}, as recommended by Arduino. 
+Since it is only not rejected using a certain hardware, we have ultimately shown that these boards are not ideal devices for this task. Instead we have refuted the claim made by Arduino themselves and devised a program to find the seed when the onboard PRNG is seeded with \texttt{analogRead}, as recommended by Arduino. 
+
+In future work, the exact nature of the ports read by\texttt{analogRead} should be investigated, with regards to the environment or USB connectors. It also remains open to find a cheap, readily available hardware that produce random statistically unbiased random numbers quickly. 
 
 \bibliography{ardrand}{}
 \bibliographystyle{plain}
