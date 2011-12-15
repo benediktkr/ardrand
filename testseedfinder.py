@@ -41,7 +41,6 @@ for i in range(k):
     # genrate sequence
     seq = [avrrand() for _ in range(depth+sendValues+1)]
 
-    # Here C = depth. 
     m = int(est*depth)
 
     foundSeed = sf.findseed(seq, m)
