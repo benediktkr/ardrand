@@ -70,6 +70,9 @@ class Seedfinder:
         que/possible seed beyond the length k. Thus m is an estimation
         of C'''
 
+        # Giveup option for testing purposes
+        giveup = 50
+        
         k = len(sequence)
         lastk = [deque([]) for i in self.p]
 
@@ -85,7 +88,8 @@ class Seedfinder:
             if list(lastk[i]) == sequence:
                 return i
             
-        while True:
+        #while True:
+        for _ in xrange(giveup):
             # This has to be a little more sophisticated than a crude
             # bruteforce attack.
             #
@@ -121,6 +125,8 @@ class Seedfinder:
             # may never halt, if we are given a bad sequence (that originated from some
             # other PRNG or perhaps not from a PRNG at all).
 
+        # Giving up
+        return -1
 
     def _makefreq(self, source, n=20000):
         '''Builds the probability distribution from n samples from
