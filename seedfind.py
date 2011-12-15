@@ -22,7 +22,7 @@ class Seedfinder:
         '''FILL ME OUT'''
         # If samplesource is None, assume the default
         if samplesource == None:
-            samplesource = ArdFile()
+            samplesource = ArdFile(fname='samples.txt')
 
         self.p, self.g = self._makefreq(samplesource)
 

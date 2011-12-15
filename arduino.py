@@ -227,7 +227,7 @@ class Arduino(Serial):
         
 class ArdFile(file):
     '''Interface to be able to call .readint() on a file object'''
-    def __init__(self, fname='samples.txt', mode='r'):
+    def __init__(self, fname, mode='r'):
         file.__init__(self, fname, mode)
         self.samples = self.read().split('\n')
         self.i = 0
