@@ -1,0 +1,234 @@
+\documentclass[a4paper]{article}           % Switch to report for front page
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[icelandic]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}                      % Allows more fine-grained control over line spacing
+\usepackage{fancyhdr}                      % Headers and footers
+\usepackage{lastpage}                      % Allows references to the last page of the document
+\usepackage{chngpage}                      % Change format mid-page ?
+\usepackage{soul}                          % Highlights text, with \hl{}
+\usepackage[usenames,dvipsnames]{color}    % Add color to text
+\usepackage{graphicx,float,wrapfig}
+\usepackage{ifthen}                        % \ifthenelse{}
+\usepackage{listings} 
+%\usepackage{courier}                      % Write in a monospace font
+%\usepackage{geometry}                      % Because 'fullpage' is outdated
+\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{subfig}
+\usepackage{placeins}
+
+\newtheorem{mydef}{Definition}
+\newcommand{\Title}{Arduino sem vélbúnaðar slembitölugjafi}
+\newcommand{\SubTitle}{Post Mortem}
+\newcommand{\DueDate}{Desember 2011} % Or \today
+\newcommand{\Class}{Ardrand}
+\newcommand{\AuthorClearSpace}{3in}    % How far below the title the author name shoudl appear
+\newcommand{\ClassInstructor}{Ýmir Vigfússon}
+\newcommand{\AuthorName}{Benedikt Kristinsson}
+\newcommand{\DueLang}{}     % Icelandic   (perhaps some ifelse on language pack)
+%\newcommand{\DueLang}{Due on}   % English
+
+%\topmargin=-0.45in      
+%\evensidemargin=0in     
+%\oddsidemargin=0in      
+%\textwidth=6.5in        
+%\textheight=9.0in       
+%\headsep=0.25in         
+
+% This is the color used for comments below
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0}
+\definecolor{MyDarkRed}{rgb}{0.4,0.0,0.0}
+
+
+\lstloadlanguages{Python}
+\lstset{language=Python,                        
+       %frame=single,                               % Single frame around code
+       %basicstyle=\small\ttfamily,                 % Use small true type font
+        basicstyle=\small,                          % Don't use ttf
+        keywordstyle=[1]\color{Blue}, %\bf          % functions green (bold commented out)
+        keywordstyle=[2]\color{Green},              % function arguments purple
+        keywordstyle=[3]\color{Red}\underbar,       % User functions underlined and blue
+        identifierstyle=,
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkRed}\small,
+        stringstyle=\color{MyDarkGreen},              % Strings
+        showstringspaces=false,                     % Don't put marks in string spaces
+        tabsize=4,
+        % To add more keywords
+       %morekeywords={},
+        % Function parameters
+       %morekeywords=[2]{on, off, interp},
+        %%% Put user defined functions here
+       %morekeywords=[3]{FindESS, homework_example},
+        %
+       %morecomment=[l][\color{Grey}]{...},        % Line continuation (...) like blue comment
+       %numbers=left,                              % Line numbers on left
+       %firstnumber=1,                             % Line numbers start with line 1
+       %numberstyle=\tiny\color{Grey},             % Line numbers are blue
+       %stepnumber=1                               % Line numbers go in steps of 1
+        }
+
+% Setup the header and footer
+%\pagestyle{fancy} % Pagestyle allows for header/foother
+\pagestyle{plain} % No header/footerer
+\lhead{\AuthorName}                                                 
+\chead{\SubTitle}  
+\rhead{\Class}  
+%\cfoot{\thepage}   
+% \rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}}
+\renewcommand\headrulewidth{0.4pt}                     
+%\renewcommand\footrulewidth{0.4pt}                     
+% This is used to trace down (pin point) problems in latexing a document:
+%\tracingall
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Some tools
+
+% Includes a figure
+% The first parameter is the label, which is also the name of the figure
+%   with or without the extension (e.g., .eps, .fig, .png, .gif, etc.)
+%   IF NO EXTENSION IS GIVEN, LaTeX will look for the most appropriate one.
+% The second parameter is the width of the figure normalized to column width
+%   (e.g. 0.5 for half a column, 0.75 for 75% of the column)
+% The third parameter is the caption.
+\newcommand{\scalefig}[3]{
+  \begin{figure}[ht!]
+    % Requires \usepackage{graphicx}
+    \centering
+    \includegraphics[width=#2\columnwidth]{#1}
+    %%% I think \captionwidth (see above) can go away as long as
+    %%% \centering is above
+    %\captionwidth{#2\columnwidth}%
+    \caption{#3}
+    \label{#1}
+  \end{figure}}
+
+% Includes code
+% The first parameter is the label, which also is the name of the script
+%   with the file extension the '#1' in the command belove
+% The second parameter is the optional caption.
+\newcommand{\code}[2]
+{\begin{itemize}\item[]\lstinputlisting[caption=#2,label=#1]{#1}\end{itemize}}
+  
+
+%\setcounter{secnumdepth}{0}
+\newcommand{\problem}[2]
+{
+   \subsubsection*{\sc{#1}}
+               #2
+}
+\newcommand{\tmpsection}[1]{}
+\let\tmpsection=\section
+
+\renewcommand{\section}[2]{
+
+    \ifthenelse{
+      \equal{#2}{Heimildir} % I have to be oddly specific here
+    }
+    {
+      \tmpsection{\sc{#1} }
+      \tmpsection{\sc{#2} }
+    }
+    {\tmpsection{\sc{#1} } }
+      
+
+}
+
+
+\title{
+    \Class:\ \Title
+    \ifthenelse{\equal{\SubTitle}{}}{}{\\{\SubTitle}}
+    }
+\date{\small{\DueLang\ \DueDate}}
+\author{\AuthorName\\Leiðbeinandi: \ClassInstructor}
+
+
+\begin{document}
+\maketitle
+
+\section{Upphafleg áætlun}
+
+Upphaflega stóð ég í þeirri trú að það væri hægt að nota Arduino sem einfaldanslembigjafa án mikillar fyrirhafnar. Áætlunin var að fyrst búa til slembitölugjafa með Arduino og síðan skrifa forritseiningu fyrir Linux-kjarnan til þess að bæta slembni við \texttt{/dev/random} og \texttt{/dev/urandom}. Það reyndist hinsvegar erfitt að fá slembni út úr Arduino og þessi verkþáttur var aldrei framkvæmdur. 
+
+\subsection{Tímaplan}
+
+Í byrjun verkefnis skrifaði ég niður verkþætti og áætlað tímaplan fyrir hvern þeirra. Það var eftirfarandi
+
+
+\begin{description}
+\item[Ritskoðun/Lit. review] ca 100 tímar. Skrifa úrdrætti úr greinum og byggja upp lista af heimildum.
+
+\item[Tilraunir] ca 120 tímar. Búa til upphaflegar tilraunir og tölfræðilegar prófanir án þess að fá endanlegar niðurstöður strax.
+
+\item[Framkvæmd] Skrifa umrædda forritseiningu fyrir Linux kjarnan. Framkvæma tölfræðilegar prófanir með endanlegum niðurstöðum.
+\end{description}
+
+
+\section{Raunveruleg framkvæmd}
+
+Fyrstu vikurnar fóru í það að lesa greinar og skrifa úrdrætti. Ég byggði upp safn af úrdráttum inn á Google Docs sem deilt var með leiðbeinanda. Einnig las viðeigandi kafla í Schneier bókini ,,Applied Cryptography'' og í Menezes bókini ,,Handbook of Applied Cryptography''. Sumar greinar reyndust mjög torlesnar, skemmst er að minnast á að ég var viku að lesa grein eftir U.M. Mauer --- svo var mér tjáð að hann væri þungur í lestri. 
+
+\subsection{Breyting á stefnu verkefnis}
+
+Eftir að hafa byggt upp ágætis safn af greinum fór ég að skoða niðurstöður úr Arduino. Örtölvan Arduino hefur analog-til-digital breytir og hugmyndin var sú að nota suð í þessum breyti til þess að lesa slembin gildi\footnote{Sjá rannsóknarskýrslu fyrir nánari útskýringu} gegnum fallið \texttt{analogRead} á Arduino. Það kom fljótt í ljós að ekki væri hægt að lesa gildin ,,hrá'' og nýta sem slembni. 
+Hinsvegar þá hafa framleiðendur Arduino mælt með að nota úrkomu úr þessu falli sem sæði/fræ fyrir PRNG. Þá breyttist stefna verkefnisns í að sýna fram á að þessi staðhæfing væri röng. Það gerði ég. 
+
+Til þess að sýna fram á veikleika þessara hugmynd skrifaði ég forrit sem tekur runu frá PRNG úr \texttt{avr-libc} (notað af Arduino) og finnur sæðið sem notað var.
+
+\subsection{Vandamál sem komu upp}
+
+Þegar ég var að prufa útkomur við mismunandi aðstæður og hita setti ég einn Arduino inn í frystir yfir nótt. Þegar ég tók hann út morgunin eftir var hann ónýtur og hætti að svara. Arduino hafa ekki gefið út upplýsingar um hitastig fyrir vélbúnaðinn en AVR, fyrirtækið sem framleiðir örgjörvan, hafa gefið út að hann þoli allt að $-35^\circ$C. 
+
+Það kom einnig í ljós að umhverfisáhrifin voru mikil og undir lok verkefnis fundust tölvur og aðstæður þar sem Arduino gat framleitt slembnar tölur með aðferðum sem lýstar eru í rannsóknarskýrslu. Þetti olli að ég þrufti að gera breytingar á lokaskýrslu á óheppilegum tíma, en engu að síður var það afar ánægulegt að hafa tekist að framleiða tölur sem virðast slembnar. Þetta kom töluvert á óvart. 
+
+\subsection{Hvað lærði nemandinn?}
+
+Ég lærði um uppbyggingu á slembiföllum og -vélbúnaði, þá bæði pseudo-slembiföllum og raunverulegri slembni. Einnig kynntist ég hvernig Linux PRNG virkar (\texttt{/dev/random}). 
+
+Ég fékk praktíska reynslu á beitingu tölfræði við greiningu gagna. Það má til gamans geta að ég sá hagnýtan tilgang í erfðum klösum við gerð verkefinsins, en það er eitthvað sem ég tel vera kennt á rangan hátt í skólum. Ég notaði Git\footnote{\url{http://www.git-scm.com}} við umhald og sýslu á öllum mínum forritskóða og kynntist því betur. 
+
+En það sem ég tel mig hafa grætt mest á er að hafa kynnst hvernig það er að vinna sjálfstætt að rannsóknarverkefni frá upphafi til enda, að undanskildum fjárveitingum. Ég lagði fram þessa hugmynd sjálfur og starfaði meir eða minna sjálfstætt við framkvæmd alls verkefnins, þó ég gat alltaf leitað til Kristján Vals, doktorsnema við HR og Ýmis, leiðbeinanda míns. Þetta tel ég hafa verið verðmæt reynsla. 
+
+\section{Tími}
+
+Þar sem stefna verkefnins breyttist töluvert þá stóðst upphaflegt tímaplan ekki alveg. Ekki var fylgst nákvæmlega með tímanotkun en áætlaður tími fyrir þá verkþætti sem framkvæmdir voru er eitthvað í samræmi við 
+
+\begin{description}
+\item[Ritskoðun] 110 tímar. Að lesa greinar og skrifa úrdrætti reyndist tímafrekara en ég hafði gert ráð fyrir
+\item[Tilraunir og tölfræðilegar prófanir] 200 tímar. Ég framkvæmdi bæði tilraunir á ,,hráum'' gögnum sem og tölfræðiprófanir. Þessir tveir verkþættir tvinnuðust meira eða minna saman og erfitt er að gera upp um hve miklum tíma var eytt í hvorn.
+\item[Skýrslugerð] 90 tímar. Mér gekk vonum framar að skrifa lokaskýrsluna og vinna að henni, þó að það hafi vissulega tvinnast saman við tölfræðilegar prófanir og aðrar tilraunir. Það hljálpaði mikið að hafa skrifað góða úrdrætti úr lesnum greinum. 
+\end{description}
+
+
+% Uncomment the \tableofcontents and \newpage lines to get a Contents page
+% Uncomment the \setcounter line as well if you do NOT want subsections
+%       listed in Contents
+% Remeber to compile twice
+%\setcounter{tocdepth}{1}
+%\tableofcontents
+%\newpage
+
+%\clearpage
+%x\section{Lausn verkefnis og útfærsla}
+
+
+\end{document}
+
+% Stuff to mention
+% Switching from 9600 baudrate to the new one resulting in leastsignrand passing poker test
+% Also resulted in SerialException
+% How closely the algs miss the FIPS test
+% Bitrates in 9600 vs new one
+% Check other baudrates?
+
+% Eftir að gera
+%% Sýna graf frá einum Arduino þar sem lesið er frá öllum pinnum
+%% Athgua hvort að ard3 sýni drop á skógarbraut. Taka gröf úr ard2 líka. Skoða ard1
+%% Sýna munin á gildum í mismuandi herbergjum (fossahvarf vs skógarbraut)
+
+% Athugasemdir til Ýmis:
+%% Mig vantar að orða tengsl við Tsense einhversstaðar
+%%% Tsense notaði einmitt aðferðina að lesa analogRead til að búa seed, koma því að
+%% Eiga öll NIST security levels erindi í skýrsluna?
+%% Ég set footnote á randomSeed referencið í introduction en myndi líka að þurfa að vitna í það í seinni kafla. Hvernig geri ég það snyrtilegast?
