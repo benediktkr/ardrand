@@ -22,7 +22,7 @@ allalgs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.meanrand, ard.updown
 #algs = [ard.updownrand, ard.mixmeanupdown, ard.twoleastsignrand]
 #algs = [ard.twoleastsignrand, ard.updownrand]
 
-algs = [ard.leastsigrand]
+algs = [ard.leastsigrand, ard.twoleastsignrand]
 
 #algs = [prng.urandom, ard.vanilla, ard.leastsigrand, ard.twoleastsignrand, ard.meanrand]
 
