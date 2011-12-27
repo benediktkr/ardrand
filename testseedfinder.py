@@ -32,7 +32,7 @@ for i in range(k):
     start = time()
     
     # Pick random seed
-    seed = int(samples[random.randint(0, len(samples))])
+    seed = int(samples[random.randint(0, len(samples))-1])
     avrsrand(seed)
 
     # skip randomly many values up to l
