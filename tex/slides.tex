@@ -14,7 +14,7 @@
 \documentclass{beamer}
 \usepackage{beamerthemeshadow}
 \usepackage[utf8]{inputenc}
-
+\usepackage[T1]{fontenc}
 
 
 
@@ -33,6 +33,12 @@
   \begin{itemize}
   \item Hard on CPU \pause
   \item External sources needed \pause
+    \begin{itemize}
+    \item Hard drives \pause
+    \item Radioactive decay \pause
+    \item Atmospheric noise (RANDOM.ORG) \pause
+    \item Intel RNG \pause
+    \end{itemize}
   \item But why? \pause
   \end{itemize}
 }
@@ -40,6 +46,21 @@
 
 
 \subsection{Cryptography}
+
+\subsection{Pseudo-Random Number Generator}
+\frame{\frametitle{Pseudo-Random Number Generator}
+  \begin{itemize}
+  \item Auðkennislykilinn/RSA SecureID \pause
+
+    \includegraphics[scale=0.3]{img/lykill_1.png} \pause
+    
+  \item Deterministic \pause
+  \item Only as secure as its seed \pause
+  \item Unpredictable sequences \pause
+
+  \end{itemize}
+}
+
 \frame{\frametitle{Cryptography}
   \begin{itemize}
     \item Bad seeding methods have resulted in breaking of cryptosystems \pause
@@ -47,19 +68,9 @@
       \item Netscape browser \pause
       \item Enigma \pause
       \end{itemize}
-    \item Linux router \pause
+    \item Single-purpose devices \pause
   \end{itemize}
 }
-
-\subsection{PRNG}
-\frame{\frametitle{PRNG}
-  \begin{itemize}
-  \item Deterministic \pause
-  \item Only as secure as its seed \pause
-  \item Unpredictable sequences \pause
-  \end{itemize}
-}
-
 
 \section{How do we get entropy?} 
 
@@ -91,12 +102,14 @@
 \item Analog noise from \texttt{analogRead} \pause
 \item Does it work ? \pause
 \item Is it fast enough? \pause
+\item Has it been tried before? \pause
 
 \end{itemize} 
 \begin{quote}
 If it is important for a sequence of [random] values generated to differ [...] initialize the random number generator with a fairly random input, such as analogRead() on an unconnected pin. 
 \end{quote}
 }
+
 
 \subsection{Hypothesis}
 \frame{\frametitle{Hypothesis}
@@ -109,20 +122,57 @@ If it is important for a sequence of [random] values generated to differ [...] i
 
 }
  
-
-
 \section{Analysis}
 \frame{\frametitle{Analysis}
-  \begin{itemize}
+  \begin{enumerate}
   \item Obtain sequences \pause
   \item Algorithms used \pause
   \item Statistical tests \pause
-  \end{itemize}
+  \end{enumerate}
 
-  Picture?
 }
 
 \section{Obtaining numbers}
+\subsection{Obtained numbers}
+% \frame{\frametitle{Obtained numbers}
+% \begin{itemize}
+%  \item Odd locations \pause
+%   \begin{itemize}
+%   \item Freezer \pause
+%   \item Fridge  \pause
+%   \item On top of heating element \pause
+%   \item Bathtub \pause
+%   \end{itemize}
+% \item Normal locations\pause 
+%   \begin{itemize}
+%   \item Rooms in flat \pause
+%   \item CS lab \pause
+%   \item Garage\pause 
+%   \end{itemize}
+  
+% \end{itemize}
+% }
+
+\frame{\frametitle{Odd locations}
+  \centering
+  \pause \includegraphics[scale=0.15]{img/ardfridge1.jpg} \pause
+  \includegraphics[scale=0.15]{img/ardfreezer1.jpg}
+}
+
+\frame{\frametitle{Odd locations}
+  \centering
+  \includegraphics[scale=0.15]{img/ardonheating1.jpg} \pause
+}
+
+\subsection{Questions}
+\frame{\frametitle{Questions}
+  \begin{itemize}
+  \item Q: Does the environment matter? \pause
+  \item Q: How can we use the bits? \pause
+  \item Q: How can we can for randomness? \pause
+  \end{itemize}
+}
+
 \subsection{Does the environment matter?}
 \frame{\frametitle{Does the environment matter?}
   Q: Does the environment matter? \pause
@@ -133,31 +183,14 @@ If it is important for a sequence of [random] values generated to differ [...] i
   Yes! 
 }
 
-\subsection{Obtained numbers}
-\frame{\frametitle{Obtained numbers}
-\begin{itemize}
- \item Odd locations \pause
-  \begin{itemize}
-  \item Freezer \pause
-  \item Fridge  \pause
-  \item On top of heating element \pause
-  \item Bathtub \pause
-  \end{itemize}
-\item Normal locations\pause 
-  \begin{itemize}
-  \item Rooms in flat \pause
-  \item CS lab \pause
-  \item Garage\pause 
-  \end{itemize}
-  
-\end{itemize}
-}
 
 \subsection{Temperature is important}
 \frame{\frametitle{Temperature is important}
 
-      \includegraphics[scale=0.3]{img/freezer.png}
-      \includegraphics[scale=0.3]{img/heating.png}
+  \pause
+  \includegraphics[scale=0.3]{img/freezer.png}
+  \pause
+  \includegraphics[scale=0.3]{img/heating.png}
 
   % \begin{figure}[h!]
   %   \centering  
@@ -178,6 +211,22 @@ If it is important for a sequence of [random] values generated to differ [...] i
 
 
 \section{Algoritms}
+\subsection{The von Neumann box}
+\frame{\frametitle{The von Neumann box}
+  Used to remove bias from a generator \pause
+
+  \begin{block}{Idea}
+    Input two bits and discard them if they are the same. A 1,0-pair becomes a 1-bit and 0,1 pair becomes a 0-bit. 
+  \end{block} \pause
+
+  \begin{block}{Math}
+    Let $p$ be the probability that the generator yields a 1-bit and $q$ that it yields a 0-bit. This relies on the fact that 01 and 10 are equiprobable since $p \cdot q = q \cdot p$.
+  \end{block} \pause
+
+  Applied in all our algorithms. 
+
+}
+
 \subsection{Meanrand}
 \frame{\frametitle{Meanrand}
 
@@ -256,21 +305,6 @@ If it is important for a sequence of [random] values generated to differ [...] i
 
 }
 
-\subsection{The von Neumann box}
-\frame{\frametitle{The von Neumann box}
-  Used to remove bias from a generator \pause
-
-  \begin{block}{Idea}
-    Input two bits and discard them if they are the same. A 1,0-pair becomes a 1-bit and 0,1 pair becomes a 0-bit. 
-  \end{block} \pause
-
-  \begin{block}{Math}
-    Let $p$ be the probability that the generator yields a 1-bit and $q$ that it yields a 0-bit. This relies on the fact that 01 and 10 are equiprobable since $p \cdot q = q \cdot p$.
-  \end{block} \pause
-
-  Applied in all our algorithms. 
-
-}
 
 \section{The statistical tests}
 \frame{\frametitle{Statistical testing}
@@ -278,6 +312,7 @@ If it is important for a sequence of [random] values generated to differ [...] i
   \item Impossible to prove that a generator is random [AJM, PO, SA, 1996] \pause
   \item Not rejected rather than accepted as random \pause
   \item FIPS boundaries \pause
+  \item 20,000 bits
   \end{itemize}
 }
 
@@ -295,8 +330,27 @@ If it is important for a sequence of [random] values generated to differ [...] i
   \end{block}
 }
 
+\frame{\frametitle{Results}
+  \begin{block}{Results}
+    \begin{description}
+    \item[Passed]
+      \begin{itemize}
+      \item \texttt{Mean-RAND} on all our computers \pause
+      \item \texttt{Leastsign-RAND} on all our computers \pause
+      \item \texttt{Twoleastsign-RAND} on all our computers \pause
+      \end{itemize}
+    \item[Rejected]
+      \begin{itemize}
+      \item \texttt{Updown} \pause
+      \item \texttt{MixMeanUpdown}  (inconsistently) \pause
+      \end{itemize}
+    \end{description}
+   
+  \end{block}
+}
+
 \subsection{Poker test}
-\frame{\frametitle{Monobit}
+\frame{\frametitle{Poker test}
   \begin{block}{Idea}
     Based on the idea of five-card hands in poker. In a random sequence we would expect each hand to show up about the same amount of time. 
   \end{block} \pause
@@ -309,6 +363,30 @@ X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
 \]
 \end{block}
 }
+
+
+\frame{\frametitle{Results}
+  \begin{block}{Results}
+    \begin{description}
+    \item[Passed]
+      \begin{itemize}
+        \item \texttt{Leastsign-RAND} on our laptops \pause
+        \item \texttt{Twoleastsign-RAND} on our laptops \pause
+      \end{itemize}
+    \item[Rejected]
+      \begin{itemize}
+
+      \item \texttt{Updown-RAND} \pause
+      \item \texttt{Mean-RAND} \pause
+      \item \texttt{MixMeanUpdown-RAND} \pause
+      \item All algoritms on desktop computer
+
+      \end{itemize}
+    \end{description}
+   
+  \end{block}
+}
+
 
 \subsection{Runs test}
 \frame{\frametitle{Runs}
@@ -336,6 +414,29 @@ X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
   \end{block}
 }
 
+\frame{\frametitle{Results}
+  \begin{block}{Results}
+    \begin{description}
+    \item[Passed]
+      \begin{itemize}
+        \item \texttt{Leastsign-RAND} sometimes on laptops
+        \item \texttt{Twoleastsign-RAND} always on one laptop
+        \item \texttt{Twoleastsign-RAND} sometimes on another laptop
+      \end{itemize}
+    \item[Rejected]
+      \begin{itemize}
+
+      \item \texttt{Updown-RAND}
+      \item \texttt{Mean-RAND}
+      \item \texttt{MixMeanUpdown-RAND}
+      \item All algoritms on desktop computer
+
+      \end{itemize}
+    \end{description}
+   
+  \end{block}
+}
+
 
 \section{Results}
 \frame{\frametitle{Results}
@@ -348,20 +449,32 @@ X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
     & \textcolor{green}{\textbf{\tiny ACC}}
     & \textcolor{red}{(\textbf{\tiny REJ})}
     & \textcolor{green}{\textbf{\tiny ACC}}
-    & 290.55 bps \\
+    & 290.55 bps \pause\\
     
     \texttt{Twoleastsign} & \textcolor{green}{\textbf{\tiny ACC}}
     & \textcolor{green}{\textbf{\tiny ACC}}
     & \textcolor{green}{\textbf{\tiny ACC}}
     & \textcolor{green}{\textbf{\tiny ACC}}
-    & 172.0 bps \\
+    & 172.0 bps \pause\\
     
     \texttt{Mean} & \textcolor{green}{\textbf{\tiny ACC}}
     & \textcolor{red}{\textbf{\tiny REJ}}
     & \textcolor{red}{\textbf{\tiny REJ}}
     & \textcolor{green}{\textbf{\tiny REJ}}
-    & 25.32 bps \\
-    
+    & 25.32 bps \pause\\
+
+    \texttt{Updown-RAND} & \textcolor{red}{\textbf{\tiny REJ}}
+    & \textcolor{red}{\textbf{\tiny REJ}}
+    & \textcolor{red}{\textbf{\tiny REJ}}
+    & \textcolor{green}{\textbf{\tiny REJ}}
+    & 4 bps \pause\\
+
+    \texttt{MixMeanUpdown} & \textcolor{green}{\textbf{\tiny ACC}}
+    & \textcolor{red}{\textbf{\tiny REJ}}
+    & \textcolor{red}{\textbf{\tiny REJ}}
+    & \textcolor{green}{\textbf{\tiny REJ}}
+    & 2 bps \pause\\
+
     \hline
   \end{tabular} \pause
 
@@ -376,9 +489,9 @@ X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
   \item Arduino not a feasible target using our methods \pause
   \item We created a seed discovery program \pause
     \begin{itemize}
-    \item Runs quickly \pause
+    \item Runs quickly (Mean: 1.6 seconds) \pause
+    \item Always finds seed in our experiments (5000 sequences) \pause
     \item Almost always finds the seed \pause
-    \item Tested X sequences, Y found seed \pause
     \end{itemize}
   \end{itemize}
 }
@@ -387,9 +500,17 @@ X_3 = \frac{2^m}{k} \left( \sum_{i=1}^{2^m} n_i^2 \right) - k
 \frame{\frametitle{Future work}
   \begin{itemize}
   \item Find out what factors cause it to pass tests \pause
+    \begin{itemize}
+    \item Stabilize if possible \pause
+    \end{itemize}
   \item Implement more algorithms to look for entropy \pause
-  \item ?
+  \item Cheap and simple modifications of Arduino \pause
+  \item Workshop \pause
   \end{itemize}
 }
+
+\frame{\frametitle{Thank you}
+  \huge Thank you. Questions?
+  }
 
 \end{document}
