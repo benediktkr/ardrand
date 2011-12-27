@@ -1,6 +1,6 @@
 #include <string.h>
 
-int pin=3;
+int pin=5;
 void setup() {
     Serial.begin(115200);
     int mode = 0;   
