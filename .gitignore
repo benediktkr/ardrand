@@ -1,3 +1,15 @@
 temp.txt
 *.pyc
 *~
+*.aux
+*.log
+*.bbl
+*.nov
+*.dvi
+*.toc
+*.out
+*.blg
+*.nav
+*.snm
+#*#
+
