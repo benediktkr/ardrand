@@ -1,8 +1,8 @@
 #coding: utf-8
-'''Let k be the number of calls that a program has made to the
+'''Let C be the number of calls that a program has made to the
 avr-libc random() function (the Arduino is equipped with it). This
 program finds the seed value with reasonable guessing-time (runs in
-O(k)).
+O(C)).
 
 Since the analogRead() function is heavily biased, we use a sampling
 to create a probability distribution that we select from. The idea is
@@ -28,15 +28,7 @@ class Seedfinder:
 
 
     def fromcomplete(self, sequence):
-        '''This program finds the seed given a complete sequence from
-        the seed. Let k be the number of calls a program has made to
-        the avr-libc random() function (length of the sequence).
-
-        Ignoring the break-statement, the worst case scenario is that
-        we make 1024*k calls to the function oursevles.
-
-        This function then runs in O(k) time, where k is the length
-        of the given sequence.'''
+        '''Find the seed when given the whole sequence.'''
 
         # Let's use lits
         #lastk = [deque()]*1024
@@ -54,9 +46,7 @@ class Seedfinder:
                     # We got the wrong value, pointless to go on
                     break
 
-            #if list(lastk[i]) == sequence:
             if lastk[i] == sequence:
-                # We have found the sequence, i is the seed
                 return i
 
         # Happens if the seed is larger than 2**10-1 or we have a bad sequence. 
@@ -65,10 +55,21 @@ class Seedfinder:
     def findseed(self, sequence, m=1):
         '''Finds the seed given a sequcence that does not have to be
         complete from the seed.
-        
-        m is how many extra iterations we want to spend on each
-        que/possible seed beyond the length k. Thus m is an estimation
-        of C'''
+
+        Let S_0 be the initial sequence of length k with s as seed,
+        and S_n be the sequence with radom variables
+        s_{n-k},..,s_k. Let S_1 be the observerd sequnce, also of
+        length k.
+
+        In each iteration, this program will generate all sequences
+        S_i of s_{last},...,s{last+k+m}.
+
+        Thus m is in a wayan estimation of C. One of those
+        performance-tuning thingies.
+
+        The program makes infinitely many iterations until it finds it
+        unless the debug value is set. '''
+
 
         # Giveup option for testing purposes
         giveup = 50
@@ -76,7 +77,8 @@ class Seedfinder:
         k = len(sequence)
         lastk = [deque([]) for i in self.p]
 
-        # Expand all the deques by k elements from p[i] for each i. 
+        # Expand all the deques by k elements from p[i] for each i.
+        # => generate initial sequences. 
         # 1024*k operations → O(k)
         for i in self.p:
             srandom(i)
@@ -98,19 +100,11 @@ class Seedfinder:
             # completely dependent upon the number of calls made to
             # the PRNG before the sequence given to us appeared (until
             # we find the sequence, we stay inside the while loop. Let
-            # C denote this value. Let m be our best estimation of C. 
+            # C denote this value. Let m be our best estimation of C.
             #
-            # For every value i , we generate m+k values from i as a
-            # seed. Here i is an index in the probability distribution
-            # so we begin with the most likely values.
-            #
-            #
-            # After i edited the for loops, fix this comment section
-            # So the worst case is 1024*C. That gives us a running
-            # boundary of O(C) where C is unknown. Techincally, it is
-            # a constant but the running time of the program is highly
-            # dependent on it.
-            #
+            # For every value i, we have started with the intial sequnce
+            # of length k. In each iteration we will check east of the
+            # m+k sequential ques for a match. 
             
             for i in self.p: 
                 for _ in range(m+k):
@@ -121,6 +115,7 @@ class Seedfinder:
                     lastk[i].append(v)
                     if list(lastk[i]) == sequence:
                         return i
+
             # If we haven't found anything yet, we stay in the while loop. This program
             # may never halt, if we are given a bad sequence (that originated from some
             # other PRNG or perhaps not from a PRNG at all).
