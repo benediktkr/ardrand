@@ -1,0 +1,59 @@
+\begin{thebibliography}{10}
+
+\bibitem{anthes2011}
+Gary Anthes.
+\newblock {The Quest for Randomness}.
+\newblock {\em {CACM}}, 54(4):13--15, 2011.
+
+\bibitem{ardref}
+Arduino.cc.
+\newblock {Arduino Reference Manual}, 2011.
+
+\bibitem{atmegads}
+ATMEL.
+\newblock {8-bit Atmel microcontroller with 4/8/16/32K Bytes In-System
+  Programmable Flash, Datasheet}, 2011.
+
+\bibitem{airturb}
+{Don Davis, Ross Ihaka, Philip Fenstermacher}.
+\newblock {Cryptographic Randomness from Air Turbulence in Disk Drives}.
+\newblock {\em {Advances in Cryptography}}, {839}:114--120, 1994.
+
+\bibitem{netscape}
+Ian Goldberg and David Wagner.
+\newblock {Randomness and the Netscape Browser}.
+\newblock {\em {Dr. Dobbs Journal}}, {21}:66--106, 1996.
+
+\bibitem{intel}
+Benjamin Juan and Paul Kocher.
+\newblock {The Intel Random Number Generator}, 1999.
+
+\bibitem{nist}
+National Institute of Standards \&~Technology Juan~Soto.
+\newblock Statistical testing of random number generators, 1999.
+
+\bibitem{menezes1996}
+Alfred~J. Menezes, Paul~C. van Oorschot, and Scott~A. Vanstone.
+\newblock {\em Handbook of Applied Cryptography}.
+\newblock CRC Press, 1996.
+
+\bibitem{fips140}
+{National Institute of Standards and Technology}.
+\newblock {FIPS PUB 140-1: Security Requierments for Cryptography Modules},
+  1994.
+
+\bibitem{tsense}
+{Rúnarsson, Kristinsson \& Jónsson}.
+\newblock {TSense: Trusted Sensors and Supported Infrastructure}, 2010.
+
+\bibitem{mauer}
+{Ueli M. Mauer}.
+\newblock {A universal statistical test for random bit generators}.
+\newblock {\em {Journal of Cryptography}}, 5:89--105, {1992}.
+
+\bibitem{lrng}
+{Zvi Gutterman, Benny Pinkas, Tzachy Reinman}.
+\newblock {Analysis of the Linux Random Number Generator}.
+\newblock {\em {Security and Privacy}}, pages 385--400, 2006.
+
+\end{thebibliography}
