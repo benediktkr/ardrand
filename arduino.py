@@ -79,10 +79,6 @@ class Arduino(Serial):
         meanval = float(sum(buf))/bufsize
 
         for i in xrange(n):
-            #if i%50==0:
-            #    print i
-
-            #yield self.vnbox(lambda: 1 if self.readint() > m else 0)
             """Generate two bits and run them through a von Neumann box.
             00/11 → discard, 10 → 1, 01 → 0"""
             i = 0
@@ -160,8 +156,6 @@ class Arduino(Serial):
         For every analogRead(), use the least significant bit, and
         vN-box Ask ymir what site he was talking about"""
         for i in xrange(n):
-            #if i%50 == 0:
-            #    print i                 # Sigh..
             yield self.vnbox(lambda: self.readint()&1)
 
     def twoleastsignrand(self, n):
@@ -174,16 +168,8 @@ class Arduino(Serial):
     def vnbox(self, phi):
         i = 0
         while True:
-            #start = time()
             b0 = phi()   # Can i do this in one line?
             b1 = phi()
-            #end = time()
-
-
-            #string = "Bitrate:", (end-start)/2, "bits/second"
-            #sys.stdout.write('\b'*len(string))
-            #stdout.write(string)
-            #stdout.flush()
             
             if b0 == b1:
                 i += 1
@@ -205,10 +191,6 @@ class Arduino(Serial):
         Yields 10 bits at a time instead of 1 like the others'''
 
         for i in xrange(n/10):
-            # b = bin(self.readint())[2:]
-            # m = 10 - len(b)
-            # if m > 0:
-            #     b = '0'*m + b
             b = format(self.readint(), '010b')
             yield b
 
