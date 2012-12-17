@@ -52,7 +52,7 @@ class Arduino(Serial):
                 exceptions here at all?'''
                 if self.debug:
                     print "SerialException:", e, "arduino.py: sleeping for 1 sec"
-                    sleep(1)
+                sleep(1)
     def poll(self):
         self.write("POLL " + str(self.pin))
         return self.readline()[:-2]
